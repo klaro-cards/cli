@@ -125,6 +125,56 @@ describe('api', () => {
       });
     });
 
+    describe('deleteStories', () => {
+      it('should delete a single story', async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          status: 204,
+          statusText: 'No Content',
+          json: async () => undefined,
+          text: async () => '',
+        });
+
+        const api = new KlaroApi('myproject', 'token123');
+        await api.deleteStories('backlog', [12]);
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          'https://myproject.klaro.cards/api/v1/boards/backlog/stories',
+          expect.objectContaining({
+            method: 'DELETE',
+            body: JSON.stringify({ stories: [{ identifier: 12 }] }),
+          })
+        );
+      });
+
+      it('should delete multiple stories', async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          status: 204,
+          statusText: 'No Content',
+          json: async () => undefined,
+          text: async () => '',
+        });
+
+        const api = new KlaroApi('myproject', 'token123');
+        await api.deleteStories('backlog', [12, 89, 187]);
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          'https://myproject.klaro.cards/api/v1/boards/backlog/stories',
+          expect.objectContaining({
+            method: 'DELETE',
+            body: JSON.stringify({
+              stories: [
+                { identifier: 12 },
+                { identifier: 89 },
+                { identifier: 187 },
+              ],
+            }),
+          })
+        );
+      });
+    });
+
     describe('error handling', () => {
       it('should handle API errors with message in response', async () => {
         mockFetch.mockResolvedValueOnce(

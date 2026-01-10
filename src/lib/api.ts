@@ -138,6 +138,11 @@ export class KlaroApi {
   async createStory(boardId: string, input: CreateStoryInput): Promise<Story> {
     return this.request<Story>('POST', `/boards/${boardId}/stories`, input);
   }
+
+  async deleteStories(boardId: string, identifiers: number[]): Promise<void> {
+    const body = { stories: identifiers.map(identifier => ({ identifier })) };
+    await this.request<void>('DELETE', `/boards/${boardId}/stories`, body);
+  }
 }
 
 export function createClient(subdomain: string, token?: string): KlaroApi {
