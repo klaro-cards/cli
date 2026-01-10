@@ -18,14 +18,20 @@ vi.mock('../../src/lib/api.js', () => ({
   },
 }));
 
+vi.mock('../../src/lib/defaults.js', () => ({
+  resolveBoard: vi.fn(),
+}));
+
 import { requireProject, requireToken } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
+import { resolveBoard } from '../../src/lib/defaults.js';
 import { createCreateCommand } from '../../src/commands/create.js';
 
 describe('create command', () => {
   const mockRequireProject = vi.mocked(requireProject);
   const mockRequireToken = vi.mocked(requireToken);
   const mockCreateClient = vi.mocked(createClient);
+  const mockResolveBoard = vi.mocked(resolveBoard);
   const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
@@ -37,6 +43,7 @@ describe('create command', () => {
   it('should create a card with title', async () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('backlog');
 
     const mockCreateStory = vi.fn().mockResolvedValue({
       id: 1,
@@ -48,6 +55,7 @@ describe('create command', () => {
     const cmd = createCreateCommand();
     await cmd.parseAsync(['node', 'test', 'New card', '-b', 'backlog']);
 
+    expect(mockResolveBoard).toHaveBeenCalledWith('backlog', 'myproject');
     expect(mockCreateClient).toHaveBeenCalledWith('myproject', 'token123');
     expect(mockCreateStory).toHaveBeenCalledWith('backlog', {
       title: 'New card',
@@ -64,6 +72,7 @@ describe('create command', () => {
   it('should create a card with dimensions', async () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('backlog');
 
     const mockCreateStory = vi.fn().mockResolvedValue({
       id: 1,
@@ -90,6 +99,7 @@ describe('create command', () => {
   it('should use custom project from option', async () => {
     mockRequireProject.mockReturnValue('custom-project');
     mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('backlog');
 
     const mockCreateStory = vi.fn().mockResolvedValue({
       id: 1,
@@ -107,6 +117,7 @@ describe('create command', () => {
   it('should handle API errors', async () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('badboard');
 
     const mockCreateStory = vi.fn().mockRejectedValue(new KlaroApiError(400, 'Invalid board'));
     mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
@@ -116,5 +127,42 @@ describe('create command', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Invalid board');
     expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('should use default board when -b not specified', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('all');
+
+    const mockCreateStory = vi.fn().mockResolvedValue({
+      id: 1,
+      identifier: 'CARD-1',
+      title: 'New card',
+    });
+    mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
+
+    const cmd = createCreateCommand();
+    await cmd.parseAsync(['node', 'test', 'New card']);
+
+    expect(mockResolveBoard).toHaveBeenCalledWith(undefined, 'myproject');
+    expect(mockCreateStory).toHaveBeenCalledWith('all', { title: 'New card' });
+  });
+
+  it('should pass CLI board to resolveBoard', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('sprint-1');
+
+    const mockCreateStory = vi.fn().mockResolvedValue({
+      id: 1,
+      identifier: 'CARD-1',
+      title: 'New card',
+    });
+    mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
+
+    const cmd = createCreateCommand();
+    await cmd.parseAsync(['node', 'test', 'New card', '-b', 'sprint-1']);
+
+    expect(mockResolveBoard).toHaveBeenCalledWith('sprint-1', 'myproject');
   });
 });

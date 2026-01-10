@@ -1,7 +1,12 @@
+export interface ProjectDefaults {
+  board?: string;
+}
+
 export interface Config {
   token?: string;
   project?: string;
   email?: string;
+  projectDefaults?: Record<string, ProjectDefaults>;
 }
 
 export interface AuthToken {

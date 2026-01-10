@@ -7,6 +7,7 @@ import { createWhoamiCommand } from './commands/whoami.js';
 import { createUseCommand } from './commands/use.js';
 import { createLsCommand } from './commands/ls.js';
 import { createCreateCommand } from './commands/create.js';
+import { createConfigCommand } from './commands/config.js';
 import { setTrace } from './lib/trace.js';
 
 const program = new Command();
@@ -29,5 +30,6 @@ program.addCommand(createWhoamiCommand());
 program.addCommand(createUseCommand());
 program.addCommand(createLsCommand());
 program.addCommand(createCreateCommand());
+program.addCommand(createConfigCommand());
 
 program.parse();

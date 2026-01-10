@@ -45,6 +45,7 @@ This is a CLI tool (`klaro`) for interacting with the Klaro Cards API, built wit
 * If you're asked to work on a TODO task, move it to ONGOING first
 * Track your own subtasks in these .md task files
 * You MUST commit those .md task files if you change them as a result of your work
+* When you mark a card as DONE, if it does not have a number take the next available one
 
 ### Code quality
 
