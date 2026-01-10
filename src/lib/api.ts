@@ -15,12 +15,11 @@ export class KlaroApiError extends Error {
   }
 }
 
-function buildHeaders(token?: string): Record<string, string> {
-  const projectSubdomain = getProject() || 'app';
+export function buildHeaders(subdomain: string, token?: string): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-Klaro-Project-Subdomain': projectSubdomain,
+    'X-Klaro-Project-Subdomain': subdomain,
   };
 
   if (token) {
@@ -30,7 +29,7 @@ function buildHeaders(token?: string): Record<string, string> {
   return headers;
 }
 
-function sanitizeHeaders(headers: Record<string, string>): Record<string, string | undefined> {
+export function sanitizeHeaders(headers: Record<string, string>): Record<string, string | undefined> {
   return {
     ...headers,
     Authorization: headers.Authorization ? '***' : undefined,
@@ -75,17 +74,19 @@ async function doFetch<T>(
 }
 
 export class KlaroApi {
+  private subdomain: string;
   private baseUrl: string;
   private token?: string;
 
   constructor(subdomain: string, token?: string) {
+    this.subdomain = subdomain;
     this.baseUrl = `https://${subdomain}.klaro.cards/api/v1`;
     this.token = token;
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${path}`;
-    const headers = buildHeaders(this.token);
+    const headers = buildHeaders(this.subdomain, this.token);
     return doFetch<T>(method, url, headers, body);
   }
 
@@ -97,7 +98,7 @@ export class KlaroApi {
       client_id: email,
       client_secret: password,
     };
-    const headers = buildHeaders();
+    const headers = buildHeaders(subdomain);
 
     const result = await doFetch<AuthToken>(
       'POST',
@@ -114,13 +115,13 @@ export class KlaroApi {
 
   async getMe(): Promise<{ email: string; nickname?: string }> {
     const url = `${AUTH_API_URL}/auth/me`;
-    const headers = buildHeaders(this.token);
+    const headers = buildHeaders(this.subdomain, this.token);
     return doFetch<{ email: string; nickname?: string }>('GET', url, headers);
   }
 
   async logout(): Promise<void> {
     const url = `${AUTH_API_URL}/auth/tokens/self`;
-    const headers = buildHeaders(this.token);
+    const headers = buildHeaders(this.subdomain, this.token);
     await doFetch<void>('DELETE', url, headers);
   }
 

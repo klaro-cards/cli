@@ -1,32 +1,12 @@
 import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
+import { parseDimensions } from '../utils/dimensions.js';
 
 interface CreateOptions {
   project?: string;
   title: string;
   dimension?: string[];
-}
-
-function parseDimensions(dimensionArgs?: string[]): Record<string, string> {
-  const dimensions: Record<string, string> = {};
-
-  if (!dimensionArgs) {
-    return dimensions;
-  }
-
-  for (const arg of dimensionArgs) {
-    const eqIndex = arg.indexOf('=');
-    if (eqIndex === -1) {
-      console.error(`Invalid dimension format: "${arg}". Expected format: key=value`);
-      process.exit(1);
-    }
-    const key = arg.substring(0, eqIndex);
-    const value = arg.substring(eqIndex + 1);
-    dimensions[key] = value;
-  }
-
-  return dimensions;
 }
 
 async function createAction(board: string, options: CreateOptions): Promise<void> {

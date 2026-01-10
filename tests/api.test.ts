@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { KlaroApi, KlaroApiError, createClient } from '../src/lib/api.js';
+import { KlaroApi, KlaroApiError, createClient, sanitizeHeaders, buildHeaders } from '../src/lib/api.js';
 
 vi.mock('../src/lib/config.js', () => ({
   getProject: vi.fn(() => undefined),
@@ -157,5 +157,71 @@ describe('api', () => {
       const client = createClient('myproject', 'token');
       expect(client).toBeInstanceOf(KlaroApi);
     });
+  });
+});
+
+describe('buildHeaders', () => {
+  it('should build headers with subdomain and no token', () => {
+    const headers = buildHeaders('myproject');
+
+    expect(headers['Content-Type']).toBe('application/json');
+    expect(headers['Accept']).toBe('application/json');
+    expect(headers['X-Klaro-Project-Subdomain']).toBe('myproject');
+    expect(headers['Authorization']).toBeUndefined();
+  });
+
+  it('should build headers with subdomain and token', () => {
+    const headers = buildHeaders('myproject', 'secret-token');
+
+    expect(headers['Content-Type']).toBe('application/json');
+    expect(headers['Accept']).toBe('application/json');
+    expect(headers['X-Klaro-Project-Subdomain']).toBe('myproject');
+    expect(headers['Authorization']).toBe('Bearer secret-token');
+  });
+
+  it('should use provided subdomain', () => {
+    const headers = buildHeaders('another-project', 'token');
+
+    expect(headers['X-Klaro-Project-Subdomain']).toBe('another-project');
+  });
+});
+
+describe('sanitizeHeaders', () => {
+  it('should mask Authorization header when present', () => {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer secret-token-123',
+    };
+    const result = sanitizeHeaders(headers);
+
+    expect(result['Content-Type']).toBe('application/json');
+    expect(result['Authorization']).toBe('***');
+  });
+
+  it('should set Authorization to undefined when not present', () => {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    const result = sanitizeHeaders(headers);
+
+    expect(result['Content-Type']).toBe('application/json');
+    expect(result['Accept']).toBe('application/json');
+    expect(result['Authorization']).toBeUndefined();
+  });
+
+  it('should preserve all other headers', () => {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Custom-Header': 'custom-value',
+      'Authorization': 'Bearer token',
+    };
+    const result = sanitizeHeaders(headers);
+
+    expect(result['Content-Type']).toBe('application/json');
+    expect(result['Accept']).toBe('application/json');
+    expect(result['X-Custom-Header']).toBe('custom-value');
+    expect(result['Authorization']).toBe('***');
   });
 });

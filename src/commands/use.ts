@@ -1,15 +1,12 @@
 import { Command } from 'commander';
 import { readConfig, writeConfig } from '../lib/config.js';
+import { validateSubdomain } from '../utils/validation.js';
 
 function useAction(subdomain: string): void {
-  if (!subdomain) {
-    console.error('Subdomain is required.');
-    process.exit(1);
-  }
-
-  // Basic validation: subdomain should be alphanumeric with hyphens
-  if (!/^[a-z0-9-]+$/i.test(subdomain)) {
-    console.error('Invalid subdomain format. Use only letters, numbers, and hyphens.');
+  try {
+    validateSubdomain(subdomain);
+  } catch (error) {
+    console.error((error as Error).message);
     process.exit(1);
   }
 
