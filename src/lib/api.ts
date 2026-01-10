@@ -130,6 +130,11 @@ export class KlaroApi {
     if (options?.limit) {
       params.set('limit', options.limit.toString());
     }
+    if (options?.filters) {
+      for (const [key, value] of Object.entries(options.filters)) {
+        params.set(key, value);
+      }
+    }
     const queryString = params.toString();
     const path = `/boards/${boardId}/stories${queryString ? `?${queryString}` : ''}`;
     return this.request<Story[]>('GET', path);

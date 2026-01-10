@@ -1,5 +1,6 @@
 export interface ProjectDefaults {
   board?: string;
+  show?: string;
 }
 
 export interface Config {
@@ -45,4 +46,5 @@ export interface CreateStoryInput {
 
 export interface ListStoriesOptions {
   limit?: number;
+  filters?: Record<string, string>;
 }

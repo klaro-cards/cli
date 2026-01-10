@@ -2,13 +2,15 @@ import { Command } from 'commander';
 import { Bmg } from '@enspirit/bmg-js';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard } from '../lib/defaults.js';
+import { resolveBoard, resolveShow } from '../lib/defaults.js';
+import { parseDimensions } from '../utils/dimensions.js';
 
 interface LsOptions {
   board?: string;
   project?: string;
   limit?: string;
-  filters?: string;
+  show?: string;
+  filter?: string[];
 }
 
 async function lsAction(options: LsOptions): Promise<void> {
@@ -16,20 +18,22 @@ async function lsAction(options: LsOptions): Promise<void> {
     const project = requireProject(options.project);
     const token = requireToken();
     const board = resolveBoard(options.board, project);
+    const show = resolveShow(options.show, project);
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
+    const filters = parseDimensions(options.filter);
 
     const api = createClient(project, token);
-    const stories = await api.listStories(board, { limit });
+    const stories = await api.listStories(board, { limit, filters });
 
     if (stories.length === 0) {
       console.log('No cards found.');
       return;
     }
 
-    // Default columns plus any user-specified filters
+    // Default columns plus any user-specified show columns
     const columns = ['identifier', 'title'];
-    if (options.filters) {
-      columns.push(...options.filters.split(',').map(d => d.trim()));
+    if (show) {
+      columns.push(...show.split(',').map(d => d.trim()));
     }
 
     // Project to selected columns only
@@ -55,6 +59,8 @@ export function createLsCommand(): Command {
     .option('-b, --board <board>', 'Board identifier (default: "all")')
     .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-l, --limit <number>', 'Maximum number of cards to show', '20')
-    .option('-f, --filters <filters>', 'Additional dimensions to show (comma-separated)')
+    .option('--show <columns>', 'Additional columns to show (comma-separated)')
+    .option('-f, --filter <key=value>', 'Filter cards (can be used multiple times)',
+      (value, previous: string[]) => previous.concat([value]), [])
     .action(lsAction);
 }

@@ -74,7 +74,7 @@ describe('config command', () => {
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'set', 'unknownkey', 'value']);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, show');
       expect(exitSpy).toHaveBeenCalledWith(1);
       expect(mockSetProjectDefault).not.toHaveBeenCalled();
     });
@@ -110,7 +110,7 @@ describe('config command', () => {
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'unset', 'unknownkey']);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, show');
       expect(exitSpy).toHaveBeenCalledWith(1);
       expect(mockUnsetProjectDefault).not.toHaveBeenCalled();
     });

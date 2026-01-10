@@ -66,6 +66,17 @@ export function resolveBoard(
   return resolveOption(cliValue, defaults, 'board');
 }
 
+export function resolveShow(
+  cliValue: string | undefined,
+  project: string
+): string | undefined {
+  if (cliValue !== undefined) {
+    return cliValue;
+  }
+  const defaults = getProjectDefaults(project);
+  return defaults.show;
+}
+
 export function listProjectDefaults(project: string): ProjectDefaults {
   const projectDefaults = getProjectDefaults(project);
   return { ...HARDCODED_DEFAULTS, ...projectDefaults };

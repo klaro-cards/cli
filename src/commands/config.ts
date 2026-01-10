@@ -21,7 +21,7 @@ function setAction(
     const project = requireProject(options.project);
 
     if (!isValidKey(key)) {
-      console.error(`Error: Unknown option "${key}". Valid options: board`);
+      console.error(`Error: Unknown option "${key}". Valid options: board, show`);
       process.exit(1);
       return;
     }
@@ -39,7 +39,7 @@ function unsetAction(key: string, options: ConfigOptions): void {
     const project = requireProject(options.project);
 
     if (!isValidKey(key)) {
-      console.error(`Error: Unknown option "${key}". Valid options: board`);
+      console.error(`Error: Unknown option "${key}". Valid options: board, show`);
       process.exit(1);
       return;
     }
@@ -73,7 +73,7 @@ function listAction(options: ConfigOptions): void {
 }
 
 function isValidKey(key: string): key is keyof ProjectDefaults {
-  return key === 'board';
+  return key === 'board' || key === 'show';
 }
 
 export function createConfigCommand(): Command {
