@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn, execSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 
 /**
  * Acceptance tests that run the actual klaro CLI binary.
@@ -27,6 +29,9 @@ const canRun = USER && PASSWORD && SUBDOMAIN;
 
 const CLI_PATH = resolve(import.meta.dirname, '../dist/index.js');
 
+// Use a temporary directory for config to avoid affecting user's real ~/.klaro
+const TEST_HOME = mkdtempSync(resolve(tmpdir(), 'klaro-test-'));
+
 /**
  * Run a klaro CLI command and return stdout/stderr.
  */
@@ -34,6 +39,7 @@ function runCli(args: string[], options?: { timeout?: number }): Promise<{ stdou
   return new Promise((resolve) => {
     const proc = spawn('node', [CLI_PATH, ...args], {
       timeout: options?.timeout ?? 30000,
+      env: { ...process.env, KLARO_HOME: TEST_HOME },
     });
 
     let stdout = '';
@@ -64,6 +70,7 @@ function runLogin(email: string, password: string): Promise<{ stdout: string; st
   return new Promise((resolve) => {
     const proc = spawn('node', [CLI_PATH, 'login'], {
       timeout: 30000,
+      env: { ...process.env, KLARO_HOME: TEST_HOME },
     });
 
     let stdout = '';
@@ -110,9 +117,11 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
     }
   });
 
-  // Logout after all tests to clean up
+  // Clean up after all tests
   afterAll(async () => {
     await runCli(['logout']);
+    // Remove the temporary config directory
+    rmSync(TEST_HOME, { recursive: true, force: true });
   });
 
   describe('klaro login', () => {

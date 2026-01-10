@@ -21,12 +21,23 @@ describe('config', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.KLARO_HOME;
+  });
+
+  afterEach(() => {
+    delete process.env.KLARO_HOME;
   });
 
   describe('getConfigPath', () => {
     it('should return path in home directory', () => {
       const path = getConfigPath();
       expect(path).toBe(join(homedir(), '.klaro', 'config.json'));
+    });
+
+    it('should use KLARO_HOME when set', () => {
+      process.env.KLARO_HOME = '/custom/home';
+      const path = getConfigPath();
+      expect(path).toBe(join('/custom/home', '.klaro', 'config.json'));
     });
   });
 

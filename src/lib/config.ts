@@ -3,19 +3,26 @@ import { join } from 'node:path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { Config } from './types.js';
 
-const CONFIG_DIR = join(homedir(), '.klaro');
-const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
+function getConfigDir(): string {
+  const home = process.env.KLARO_HOME ?? homedir();
+  return join(home, '.klaro');
+}
+
+function getConfigFile(): string {
+  return join(getConfigDir(), 'config.json');
+}
 
 export function getConfigPath(): string {
-  return CONFIG_FILE;
+  return getConfigFile();
 }
 
 export function readConfig(): Config {
-  if (!existsSync(CONFIG_FILE)) {
+  const configFile = getConfigFile();
+  if (!existsSync(configFile)) {
     return {};
   }
   try {
-    const content = readFileSync(CONFIG_FILE, 'utf-8');
+    const content = readFileSync(configFile, 'utf-8');
     return JSON.parse(content) as Config;
   } catch {
     return {};
@@ -23,10 +30,12 @@ export function readConfig(): Config {
 }
 
 export function writeConfig(config: Config): void {
-  if (!existsSync(CONFIG_DIR)) {
-    mkdirSync(CONFIG_DIR, { recursive: true });
+  const configDir = getConfigDir();
+  const configFile = getConfigFile();
+  if (!existsSync(configDir)) {
+    mkdirSync(configDir, { recursive: true });
   }
-  writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8');
+  writeFileSync(configFile, JSON.stringify(config, null, 2), 'utf-8');
 }
 
 export function getProject(cliOption?: string): string | undefined {
