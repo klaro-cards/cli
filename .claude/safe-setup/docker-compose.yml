@@ -1,0 +1,17 @@
+services:
+
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.claude
+    image: enspirit/klarocli-claude
+    container_name: klarocli-claude
+    volumes:
+      - ../..:/workspace
+      - ./claude-data:/home/claude/.claude
+      - ./claude-data/.claude.json:/home/claude/.claude.json
+    environment:
+      - GIT_USER_NAME=${GIT_USER_NAME:-}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
+    stdin_open: true
+    tty: true
