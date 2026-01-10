@@ -15,9 +15,9 @@ export interface Story {
   identifier: string;
   title: string;
   specification?: string;
-  dimensions?: Record<string, string | number | boolean>;
   createdAt: string;
   updatedAt: string;
+  [key: string]: unknown;
 }
 
 export interface Board {

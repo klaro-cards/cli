@@ -45,3 +45,11 @@ This is a CLI tool (`klaro`) for interacting with the Klaro Cards API, built wit
 * If you're asked to work on a TODO task, move it to ONGOING first
 * Track your own subtasks in these .md task files
 * You MUST commit those .md task files if you change them as a result of your work
+
+### Code quality
+
+* Don't Repeat Yourself (DRY)
+* Use pure functions as much as you can, input -> output, and avoid global state
+* ALWAYS write unit tests for those functions
+* Key abstractions are in their own file
+* Helper functions can be kept together in helper files

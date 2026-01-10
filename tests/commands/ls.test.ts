@@ -105,4 +105,44 @@ describe('ls command', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Board not found');
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
+
+  it('should show additional dimensions when -d option is used', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+
+    const mockListStories = vi.fn().mockResolvedValue([
+      { id: 1, identifier: 'CARD-1', title: 'First card', progress: 'todo', assignee: 'Alice' },
+      { id: 2, identifier: 'CARD-2', title: 'Second card', progress: 'done', assignee: 'Bob' },
+    ]);
+    mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
+
+    const cmd = createLsCommand();
+    await cmd.parseAsync(['node', 'test', 'backlog', '-d', 'progress,assignee']);
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('progress'));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('assignee'));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('todo'));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Alice'));
+  });
+
+  it('should only show identifier and title by default', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+
+    const mockListStories = vi.fn().mockResolvedValue([
+      { id: 1, identifier: 'CARD-1', title: 'First card', createdAt: '2024-01-01', progress: 'todo' },
+    ]);
+    mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
+
+    const cmd = createLsCommand();
+    await cmd.parseAsync(['node', 'test', 'backlog']);
+
+    // Should contain identifier and title
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CARD-1'));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('First card'));
+    // Should NOT contain other fields like createdAt or progress
+    const allCalls = consoleSpy.mock.calls.flat().join('\n');
+    expect(allCalls).not.toContain('createdAt');
+    expect(allCalls).not.toContain('2024-01-01');
+  });
 });
