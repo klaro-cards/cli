@@ -149,7 +149,7 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
 
       expect(result.exitCode).toBe(0);
       // Should show table headers or "No cards found"
-      expect(result.stdout).toMatch(/Card #|No cards found/);
+      expect(result.stdout).toMatch(/identifier|No cards found/);
     });
 
     it('should accept --limit option', async () => {

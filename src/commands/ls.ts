@@ -22,16 +22,7 @@ async function lsAction(board: string, options: LsOptions): Promise<void> {
       return;
     }
 
-    printTable(
-      stories.map((s) => ({
-        id: s.identifier || `#${s.id}`,
-        title: s.title.length > 60 ? s.title.substring(0, 57) + '...' : s.title,
-      })),
-      [
-        { header: 'Card #', key: 'id', width: 10 },
-        { header: 'Title', key: 'title' },
-      ]
-    );
+    printTable(stories);
 
     console.log(`\nShowing ${stories.length} card(s)`);
   } catch (error) {
