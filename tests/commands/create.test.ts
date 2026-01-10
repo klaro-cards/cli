@@ -51,7 +51,6 @@ describe('create command', () => {
     expect(mockCreateClient).toHaveBeenCalledWith('myproject', 'token123');
     expect(mockCreateStory).toHaveBeenCalledWith('backlog', {
       title: 'New card',
-      dimensions: {},
     });
     expect(consoleSpy).toHaveBeenCalledWith('Card created successfully!');
   });
@@ -77,7 +76,8 @@ describe('create command', () => {
 
     expect(mockCreateStory).toHaveBeenCalledWith('backlog', {
       title: 'New card',
-      dimensions: { progress: 'todo', priority: 'high' },
+      progress: 'todo',
+      priority: 'high',
     });
   });
 

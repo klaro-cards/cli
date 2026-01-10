@@ -42,10 +42,11 @@ async function createAction(board: string, options: CreateOptions): Promise<void
     const dimensions = parseDimensions(options.dimension);
 
     const api = createClient(project, token);
-    const story = await api.createStory(board, {
+    const input = {
       title: options.title,
-      dimensions,
-    });
+      ...dimensions,
+    };
+    const story = await api.createStory(board, input);
 
     console.log(`Card created successfully!`);
     console.log(`  ID: ${story.identifier || story.id}`);

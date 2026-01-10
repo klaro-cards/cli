@@ -35,7 +35,7 @@ export interface ApiError {
 export interface CreateStoryInput {
   title: string;
   specification?: string;
-  dimensions?: Record<string, string>;
+  [key: string]: string | undefined;
 }
 
 export interface ListStoriesOptions {

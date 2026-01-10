@@ -10,6 +10,9 @@ npm run dev            # Watch mode for development
 npm test               # Run all tests
 npm run test:watch     # Run tests in watch mode
 npx vitest run tests/config.test.ts  # Run a single test file
+
+# Acceptance tests (requires real API credentials)
+KCLI_USER=email KCLI_PASSWORD=pass KCLI_SUBDOMAIN=project npm test -- tests/acceptance.test.ts
 ```
 
 ## Architecture

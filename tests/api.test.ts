@@ -111,14 +111,14 @@ describe('api', () => {
         const api = new KlaroApi('myproject', 'token123');
         const result = await api.createStory('backlog', {
           title: 'New card',
-          dimensions: { progress: 'todo' },
+          progress: 'todo',
         });
 
         expect(mockFetch).toHaveBeenCalledWith(
           'https://myproject.klaro.cards/api/v1/boards/backlog/stories',
           expect.objectContaining({
             method: 'POST',
-            body: JSON.stringify({ title: 'New card', dimensions: { progress: 'todo' } }),
+            body: JSON.stringify({ title: 'New card', progress: 'todo' }),
           })
         );
         expect(result).toEqual(newStory);
