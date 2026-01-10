@@ -30,6 +30,14 @@ export interface Board {
   id: number;
   identifier: string;
   label: string;
+  [key: string]: unknown;
+}
+
+export interface Project {
+  id: number;
+  subdomain: string;
+  label: string;
+  [key: string]: unknown;
 }
 
 export interface ApiError {

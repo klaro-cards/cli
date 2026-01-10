@@ -217,4 +217,92 @@ describe('ls command', () => {
 
     expect(mockResolveBoard).toHaveBeenCalledWith('sprint-1', 'myproject');
   });
+
+  describe('ls projects', () => {
+    it('should list projects', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockListProjects = vi.fn().mockResolvedValue([
+        { id: 1, subdomain: 'project-a', name: 'Project A' },
+        { id: 2, subdomain: 'project-b', name: 'Project B' },
+      ]);
+      mockCreateClient.mockReturnValue({ listProjects: mockListProjects } as any);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'projects']);
+
+      expect(mockListProjects).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('project-a'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Project A'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 project(s)'));
+    });
+
+    it('should show message when no projects found', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockListProjects = vi.fn().mockResolvedValue([]);
+      mockCreateClient.mockReturnValue({ listProjects: mockListProjects } as any);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'projects']);
+
+      expect(consoleSpy).toHaveBeenCalledWith('No projects found.');
+    });
+  });
+
+  describe('ls boards', () => {
+    it('should list boards', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockListBoards = vi.fn().mockResolvedValue([
+        { id: 1, location: 'backlog', label: 'Backlog' },
+        { id: 2, location: 'sprint-1', label: 'Sprint 1' },
+      ]);
+      mockCreateClient.mockReturnValue({ listBoards: mockListBoards } as any);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'boards']);
+
+      expect(mockListBoards).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('backlog'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Backlog'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 board(s)'));
+    });
+
+    it('should show message when no boards found', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockListBoards = vi.fn().mockResolvedValue([]);
+      mockCreateClient.mockReturnValue({ listBoards: mockListBoards } as any);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'boards']);
+
+      expect(consoleSpy).toHaveBeenCalledWith('No boards found.');
+    });
+  });
+
+  describe('ls cards (explicit subcommand)', () => {
+    it('should list cards when using explicit cards subcommand', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+      mockResolveBoard.mockReturnValue('backlog');
+      mockResolveShow.mockReturnValue(undefined);
+
+      const mockListStories = vi.fn().mockResolvedValue([
+        { id: 1, identifier: 'CARD-1', title: 'First card' },
+      ]);
+      mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'cards', '-b', 'backlog']);
+
+      expect(mockListStories).toHaveBeenCalledWith('backlog', { limit: 20, filters: {} });
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CARD-1'));
+    });
+  });
 });

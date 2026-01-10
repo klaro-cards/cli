@@ -9,8 +9,8 @@ We would also like to list projects and boards, not only cards.
 
 ## Technically
 
-* projects : `GET /my/projects`
-* boards : `GET /my/boards`
+* projects : `GET /my/projects/`
+* boards : `GET /my/boards/`
 * In each case, we should take the result and make it a Bmg Relation and use toText
   (very similar to cards)
 * We can hardcode some attributes to `project` on in each case.
