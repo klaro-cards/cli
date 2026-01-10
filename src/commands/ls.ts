@@ -8,7 +8,7 @@ interface LsOptions {
   board?: string;
   project?: string;
   limit?: string;
-  dimensions?: string;
+  filters?: string;
 }
 
 async function lsAction(options: LsOptions): Promise<void> {
@@ -26,10 +26,10 @@ async function lsAction(options: LsOptions): Promise<void> {
       return;
     }
 
-    // Default columns plus any user-specified dimensions
+    // Default columns plus any user-specified filters
     const columns = ['identifier', 'title'];
-    if (options.dimensions) {
-      columns.push(...options.dimensions.split(',').map(d => d.trim()));
+    if (options.filters) {
+      columns.push(...options.filters.split(',').map(d => d.trim()));
     }
 
     // Project to selected columns only
@@ -55,6 +55,6 @@ export function createLsCommand(): Command {
     .option('-b, --board <board>', 'Board identifier (default: "all")')
     .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-l, --limit <number>', 'Maximum number of cards to show', '20')
-    .option('-d, --dimensions <dims>', 'Additional dimensions to show (comma-separated)')
+    .option('-f, --filters <filters>', 'Additional dimensions to show (comma-separated)')
     .action(lsAction);
 }

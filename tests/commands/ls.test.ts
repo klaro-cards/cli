@@ -118,7 +118,7 @@ describe('ls command', () => {
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  it('should show additional dimensions when -d option is used', async () => {
+  it('should show additional dimensions when -f option is used', async () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
@@ -130,7 +130,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '-d', 'progress,assignee']);
+    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '-f', 'progress,assignee']);
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('progress'));
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('assignee'));
