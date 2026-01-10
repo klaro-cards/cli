@@ -4,19 +4,20 @@ import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 
 interface LsOptions {
+  board: string;
   project?: string;
   limit?: string;
   dimensions?: string;
 }
 
-async function lsAction(board: string, options: LsOptions): Promise<void> {
+async function lsAction(options: LsOptions): Promise<void> {
   try {
     const project = requireProject(options.project);
     const token = requireToken();
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
 
     const api = createClient(project, token);
-    const stories = await api.listStories(board, { limit });
+    const stories = await api.listStories(options.board, { limit });
 
     if (stories.length === 0) {
       console.log('No cards found.');
@@ -49,7 +50,7 @@ async function lsAction(board: string, options: LsOptions): Promise<void> {
 export function createLsCommand(): Command {
   return new Command('ls')
     .description('List cards in a board')
-    .argument('<board>', 'Board identifier')
+    .requiredOption('-b, --board <board>', 'Board identifier')
     .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-l, --limit <number>', 'Maximum number of cards to show', '20')
     .option('-d, --dimensions <dims>', 'Additional dimensions to show (comma-separated)')

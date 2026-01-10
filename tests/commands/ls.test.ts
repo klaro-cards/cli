@@ -45,7 +45,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', 'backlog']);
+    await cmd.parseAsync(['node', 'test', '-b', 'backlog']);
 
     expect(mockCreateClient).toHaveBeenCalledWith('myproject', 'token123');
     expect(mockListStories).toHaveBeenCalledWith('backlog', { limit: 20 });
@@ -61,7 +61,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', 'backlog', '-p', 'custom-project']);
+    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '-p', 'custom-project']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
   });
@@ -74,7 +74,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', 'backlog', '-l', '50']);
+    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '-l', '50']);
 
     expect(mockListStories).toHaveBeenCalledWith('backlog', { limit: 50 });
   });
@@ -87,7 +87,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', 'emptyboard']);
+    await cmd.parseAsync(['node', 'test', '-b', 'emptyboard']);
 
     expect(consoleSpy).toHaveBeenCalledWith('No cards found.');
   });
@@ -100,7 +100,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', 'nonexistent']);
+    await cmd.parseAsync(['node', 'test', '-b', 'nonexistent']);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Board not found');
     expect(exitSpy).toHaveBeenCalledWith(1);
@@ -117,7 +117,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', 'backlog', '-d', 'progress,assignee']);
+    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '-d', 'progress,assignee']);
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('progress'));
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('assignee'));
@@ -135,7 +135,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', 'backlog']);
+    await cmd.parseAsync(['node', 'test', '-b', 'backlog']);
 
     // Should contain identifier and title
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CARD-1'));

@@ -154,7 +154,7 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
 
   describe('klaro ls', () => {
     it('should list cards from a board', async () => {
-      const result = await runCli(['ls', BOARD]);
+      const result = await runCli(['ls', '-b', BOARD]);
 
       expect(result.exitCode).toBe(0);
       // Should show table headers or "No cards found"
@@ -162,13 +162,13 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
     });
 
     it('should accept --limit option', async () => {
-      const result = await runCli(['ls', BOARD, '--limit', '5']);
+      const result = await runCli(['ls', '-b', BOARD, '--limit', '5']);
 
       expect(result.exitCode).toBe(0);
     });
 
     it('should accept --project option to override subdomain', async () => {
-      const result = await runCli(['ls', BOARD, '-p', SUBDOMAIN!]);
+      const result = await runCli(['ls', '-b', BOARD, '-p', SUBDOMAIN!]);
 
       expect(result.exitCode).toBe(0);
     });
