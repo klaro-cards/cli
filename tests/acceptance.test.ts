@@ -179,7 +179,7 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
       const timestamp = Date.now();
       const title = `CLI test card ${timestamp}`;
 
-      const result = await runCli(['create', BOARD, title]);
+      const result = await runCli(['create', title, '-b', BOARD]);
 
       expect(result.exitCode).toBe(0);
       // Table output should contain identifier and title headers, plus the card data
@@ -192,7 +192,7 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
       const timestamp = Date.now();
       const title = `CLI test card with dims ${timestamp}`;
 
-      const result = await runCli(['create', BOARD, title, '-d', 'progress=todo']);
+      const result = await runCli(['create', title, '-b', BOARD, '-d', 'progress=todo']);
 
       expect(result.exitCode).toBe(0);
       // Table output should contain dimension column

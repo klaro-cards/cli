@@ -5,11 +5,12 @@ import { requireProject, requireToken } from '../lib/config.js';
 import { parseDimensions } from '../utils/dimensions.js';
 
 interface CreateOptions {
+  board: string;
   project?: string;
   dimension?: string[];
 }
 
-async function createAction(board: string, title: string, options: CreateOptions): Promise<void> {
+async function createAction(title: string, options: CreateOptions): Promise<void> {
   try {
     const project = requireProject(options.project);
     const token = requireToken();
@@ -21,7 +22,7 @@ async function createAction(board: string, title: string, options: CreateOptions
       title,
       ...dimensions,
     };
-    const story = await api.createStory(board, input);
+    const story = await api.createStory(options.board, input);
 
     // Display created card in table format (like ls does)
     const columns = ['identifier', 'title', ...Object.keys(dimensions)];
@@ -42,8 +43,8 @@ async function createAction(board: string, title: string, options: CreateOptions
 export function createCreateCommand(): Command {
   return new Command('create')
     .description('Create a new card in a board')
-    .argument('<board>', 'Board identifier')
     .argument('<title>', 'Card title')
+    .requiredOption('-b, --board <board>', 'Board identifier')
     .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-d, --dimension <key=value>', 'Set a dimension value (can be used multiple times)',
       (value, previous: string[]) => previous.concat([value]), [])
