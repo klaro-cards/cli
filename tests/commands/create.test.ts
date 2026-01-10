@@ -52,7 +52,13 @@ describe('create command', () => {
     expect(mockCreateStory).toHaveBeenCalledWith('backlog', {
       title: 'New card',
     });
-    expect(consoleSpy).toHaveBeenCalledWith('Card created successfully!');
+    // Check table output contains identifier and title
+    expect(consoleSpy).toHaveBeenCalled();
+    const output = consoleSpy.mock.calls[0][0];
+    expect(output).toContain('identifier');
+    expect(output).toContain('title');
+    expect(output).toContain('CARD-1');
+    expect(output).toContain('New card');
   });
 
   it('should create a card with dimensions', async () => {

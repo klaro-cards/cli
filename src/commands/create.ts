@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { Bmg } from '@enspirit/bmg-js';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { parseDimensions } from '../utils/dimensions.js';
@@ -28,16 +29,10 @@ async function createAction(board: string, options: CreateOptions): Promise<void
     };
     const story = await api.createStory(board, input);
 
-    console.log(`Card created successfully!`);
-    console.log(`  ID: ${story.identifier || story.id}`);
-    console.log(`  Title: ${story.title}`);
-
-    if (Object.keys(dimensions).length > 0) {
-      console.log(`  Dimensions:`);
-      for (const [key, value] of Object.entries(dimensions)) {
-        console.log(`    ${key}: ${value}`);
-      }
-    }
+    // Display created card in table format (like ls does)
+    const columns = ['identifier', 'title', ...Object.keys(dimensions)];
+    const output = Bmg([story]).project(columns).toText();
+    console.log(output);
   } catch (error) {
     if (error instanceof KlaroApiError) {
       console.error(`Error: ${error.message}`);

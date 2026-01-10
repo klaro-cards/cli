@@ -182,7 +182,9 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
       const result = await runCli(['create', BOARD, '-t', title]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Card created successfully');
+      // Table output should contain identifier and title headers, plus the card data
+      expect(result.stdout).toContain('identifier');
+      expect(result.stdout).toContain('title');
       expect(result.stdout).toContain(title);
     });
 
@@ -193,7 +195,10 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
       const result = await runCli(['create', BOARD, '-t', title, '-d', 'progress=todo']);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Card created successfully');
+      // Table output should contain dimension column
+      expect(result.stdout).toContain('identifier');
+      expect(result.stdout).toContain('progress');
+      expect(result.stdout).toContain('todo');
     });
   });
 
