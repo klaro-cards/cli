@@ -36,7 +36,7 @@ async function lsAction(options: LsOptions): Promise<void> {
     const output = Bmg(stories).project(columns).toText();
     console.log(output);
 
-    console.log(`\nShowing ${stories.length} card(s)`);
+    console.log(`\nShowing ${stories.length} card(s) in board ${board}`);
   } catch (error) {
     if (error instanceof KlaroApiError) {
       console.error(`Error: ${error.message}`);

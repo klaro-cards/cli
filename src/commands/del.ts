@@ -33,7 +33,7 @@ async function delAction(identifiers: string[], options: DelOptions): Promise<vo
 
     const count = identifiers.length;
     const plural = count === 1 ? 'card' : 'cards';
-    console.log(`Deleted ${count} ${plural}: ${identifiers.join(', ')}`);
+    console.log(`Deleted ${count} ${plural}: ${identifiers.join(', ')} in board ${board}`);
   } catch (error) {
     if (error instanceof KlaroApiError) {
       console.error(`Error: ${error.message}`);

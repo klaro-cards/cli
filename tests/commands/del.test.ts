@@ -53,7 +53,7 @@ describe('del command', () => {
 
     expect(mockResolveBoard).toHaveBeenCalledWith('backlog', 'myproject');
     expect(mockDeleteStories).toHaveBeenCalledWith('backlog', [12]);
-    expect(consoleSpy).toHaveBeenCalledWith('Deleted 1 card: 12');
+    expect(consoleSpy).toHaveBeenCalledWith('Deleted 1 card: 12 in board backlog');
   });
 
   it('should delete multiple cards', async () => {
@@ -68,7 +68,7 @@ describe('del command', () => {
     await cmd.parseAsync(['node', 'test', '12', '89', '187', '-b', 'backlog']);
 
     expect(mockDeleteStories).toHaveBeenCalledWith('backlog', [12, 89, 187]);
-    expect(consoleSpy).toHaveBeenCalledWith('Deleted 3 cards: 12, 89, 187');
+    expect(consoleSpy).toHaveBeenCalledWith('Deleted 3 cards: 12, 89, 187 in board backlog');
   });
 
   it('should use default board when -b not specified', async () => {
