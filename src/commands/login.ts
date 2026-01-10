@@ -62,7 +62,7 @@ async function loginAction(): Promise<void> {
 
   try {
     console.log('Logging in...');
-    const api = new KlaroApi('api'); // subdomain not needed for login
+    const api = new KlaroApi('app'); // subdomain not needed for login
     const result = await api.login(email, password);
 
     const config = readConfig();

@@ -10,7 +10,7 @@ async function whoamiAction(): Promise<void> {
   }
 
   try {
-    const api = new KlaroApi('api', token);
+    const api = new KlaroApi('app', token);
     const me = await api.getMe();
     console.log(me.nickname ? `${me.email} (${me.nickname})` : me.email);
   } catch (error) {

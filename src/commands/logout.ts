@@ -10,7 +10,7 @@ async function logoutAction(): Promise<void> {
   }
 
   try {
-    const api = new KlaroApi('api', token);
+    const api = new KlaroApi('app', token);
     await api.logout();
   } catch (error) {
     if (error instanceof KlaroApiError) {
