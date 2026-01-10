@@ -46,7 +46,7 @@ describe('create command', () => {
     mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
 
     const cmd = createCreateCommand();
-    await cmd.parseAsync(['node', 'test', 'backlog', '-t', 'New card']);
+    await cmd.parseAsync(['node', 'test', 'backlog', 'New card']);
 
     expect(mockCreateClient).toHaveBeenCalledWith('myproject', 'token123');
     expect(mockCreateStory).toHaveBeenCalledWith('backlog', {
@@ -74,8 +74,7 @@ describe('create command', () => {
 
     const cmd = createCreateCommand();
     await cmd.parseAsync([
-      'node', 'test', 'backlog',
-      '-t', 'New card',
+      'node', 'test', 'backlog', 'New card',
       '-d', 'progress=todo',
       '-d', 'priority=high',
     ]);
@@ -99,7 +98,7 @@ describe('create command', () => {
     mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
 
     const cmd = createCreateCommand();
-    await cmd.parseAsync(['node', 'test', 'backlog', '-t', 'New card', '-p', 'custom-project']);
+    await cmd.parseAsync(['node', 'test', 'backlog', 'New card', '-p', 'custom-project']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
   });
@@ -112,7 +111,7 @@ describe('create command', () => {
     mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
 
     const cmd = createCreateCommand();
-    await cmd.parseAsync(['node', 'test', 'badboard', '-t', 'New card']);
+    await cmd.parseAsync(['node', 'test', 'badboard', 'New card']);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Invalid board');
     expect(exitSpy).toHaveBeenCalledWith(1);

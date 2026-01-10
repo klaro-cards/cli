@@ -6,25 +6,19 @@ import { parseDimensions } from '../utils/dimensions.js';
 
 interface CreateOptions {
   project?: string;
-  title: string;
   dimension?: string[];
 }
 
-async function createAction(board: string, options: CreateOptions): Promise<void> {
+async function createAction(board: string, title: string, options: CreateOptions): Promise<void> {
   try {
     const project = requireProject(options.project);
     const token = requireToken();
-
-    if (!options.title) {
-      console.error('Title is required. Use -t or --title to specify.');
-      process.exit(1);
-    }
 
     const dimensions = parseDimensions(options.dimension);
 
     const api = createClient(project, token);
     const input = {
-      title: options.title,
+      title,
       ...dimensions,
     };
     const story = await api.createStory(board, input);
@@ -49,7 +43,7 @@ export function createCreateCommand(): Command {
   return new Command('create')
     .description('Create a new card in a board')
     .argument('<board>', 'Board identifier')
-    .requiredOption('-t, --title <title>', 'Card title')
+    .argument('<title>', 'Card title')
     .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-d, --dimension <key=value>', 'Set a dimension value (can be used multiple times)',
       (value, previous: string[]) => previous.concat([value]), [])
