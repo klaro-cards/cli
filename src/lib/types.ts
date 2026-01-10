@@ -48,3 +48,8 @@ export interface ListStoriesOptions {
   limit?: number;
   filters?: Record<string, string>;
 }
+
+export interface UpdateStoryInput {
+  identifier: number;
+  [key: string]: string | number | undefined;
+}

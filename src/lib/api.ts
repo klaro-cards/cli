@@ -1,4 +1,4 @@
-import type { AuthToken, Story, CreateStoryInput, ListStoriesOptions } from './types.js';
+import type { AuthToken, Story, CreateStoryInput, ListStoriesOptions, UpdateStoryInput } from './types.js';
 import { trace } from './trace.js';
 import { getProject } from './config.js';
 
@@ -147,6 +147,11 @@ export class KlaroApi {
   async deleteStories(boardId: string, identifiers: number[]): Promise<void> {
     const body = { stories: identifiers.map(identifier => ({ identifier })) };
     await this.request<void>('DELETE', `/boards/${boardId}/stories`, body);
+  }
+
+  async updateStories(boardId: string, updates: UpdateStoryInput[]): Promise<Story[]> {
+    const body = { patch: updates };
+    return this.request<Story[]>('PATCH', `/boards/${boardId}/stories`, body);
   }
 }
 
