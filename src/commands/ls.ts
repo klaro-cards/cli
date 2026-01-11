@@ -21,12 +21,13 @@ interface LsBoardsOptions {
   project?: string;
 }
 
-async function lsCardsAction(options: LsCardsOptions): Promise<void> {
+async function lsCardsAction(options: LsCardsOptions, command: Command): Promise<void> {
   try {
+    const globalOpts = command.optsWithGlobals();
     const project = requireProject(options.project);
     const token = requireToken();
-    const board = resolveBoard(options.board, project);
-    const show = resolveShow(options.show, project);
+    const board = resolveBoard(globalOpts.board ?? options.board, project);
+    const show = resolveShow(globalOpts.show ?? options.show, project);
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
     const filters = parseDimensions(options.filter);
 

@@ -36,7 +36,7 @@ function renderOutput(markdown: string, raw: boolean): string {
   return frontmatter + renderMarkdown(content);
 }
 
-async function readAction(identifiers: string[], options: ReadOptions): Promise<void> {
+async function readAction(identifiers: string[], options: ReadOptions, command: Command): Promise<void> {
   try {
     if (identifiers.length === 0) {
       console.error('Error: At least one identifier is required');
@@ -52,9 +52,10 @@ async function readAction(identifiers: string[], options: ReadOptions): Promise<
       return num;
     });
 
+    const globalOpts = command.optsWithGlobals();
     const project = requireProject(options.project);
     const token = requireToken();
-    const board = resolveBoard(options.board, project);
+    const board = resolveBoard(globalOpts.board ?? options.board, project);
 
     const api = createClient(project, token);
     const stories = await api.getStories(board, numericIds);
@@ -66,7 +67,8 @@ async function readAction(identifiers: string[], options: ReadOptions): Promise<
     }
 
     // Output each story as markdown
-    const dimensions = options.show?.split(',').map(d => d.trim());
+    const showOpt = globalOpts.show ?? options.show;
+    const dimensions = showOpt?.split(',').map((d: string) => d.trim());
     const parts = stories.map(s => {
       const md = formatStoryMarkdown(s, dimensions);
       return renderOutput(md, options.raw ?? false);

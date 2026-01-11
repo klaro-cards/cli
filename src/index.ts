@@ -22,6 +22,8 @@ program
   .description('Command-line interface for Klaro Cards')
   .version('0.1.0')
   .option('--trace', 'Enable API request/response tracing')
+  .option('--show <dimensions>', 'Dimensions to display (comma-separated)')
+  .option('--board <board>', 'Board identifier')
   .hook('preAction', (thisCommand) => {
     const opts = thisCommand.optsWithGlobals();
     if (opts.trace) {

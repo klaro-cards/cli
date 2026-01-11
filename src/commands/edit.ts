@@ -11,7 +11,7 @@ interface EditOptions {
   show?: string;
 }
 
-async function editAction(identifier: string, options: EditOptions): Promise<void> {
+async function editAction(identifier: string, options: EditOptions, command: Command): Promise<void> {
   try {
     const numericId = parseInt(identifier, 10);
     if (isNaN(numericId)) {
@@ -20,9 +20,10 @@ async function editAction(identifier: string, options: EditOptions): Promise<voi
       return;
     }
 
+    const globalOpts = command.optsWithGlobals();
     const project = requireProject(options.project);
     const token = requireToken();
-    const board = resolveBoard(options.board, project);
+    const board = resolveBoard(globalOpts.board ?? options.board, project);
 
     const api = createClient(project, token);
 
@@ -35,7 +36,8 @@ async function editAction(identifier: string, options: EditOptions): Promise<voi
     }
 
     const story = stories[0];
-    const dimensions = options.show?.split(',').map(d => d.trim());
+    const showOpt = globalOpts.show ?? options.show;
+    const dimensions = showOpt?.split(',').map((d: string) => d.trim());
 
     // Format as markdown and open in editor
     const markdown = formatStoryMarkdown(story, dimensions);
