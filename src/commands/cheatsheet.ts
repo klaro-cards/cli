@@ -33,8 +33,15 @@ klaro edit 1 --show progress     # Include dimensions in editor
 
 ## Creating cards
 
-klaro create "Card title"        # Create new card
+klaro create "Card title"        # Create new card with title
+klaro create @card.md            # Create from markdown file
+cat card.md | klaro create       # Create from stdin
 klaro create "Title" -b backlog  # Create in specific board
+
+## Duplicating cards
+
+klaro read 3 | klaro create                            # Duplicate card 3
+klaro read 3 --show assignee | klaro create -d assignee=Bob  # Duplicate and reassign
 
 ## Updating cards
 

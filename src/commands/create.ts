@@ -1,9 +1,11 @@
 import { Command } from 'commander';
+import { readFileSync } from 'fs';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
 import { printTable } from '../utils/table.js';
+import { parseStoryMarkdown } from '../utils/story-markdown.js';
 
 interface CreateOptions {
   board?: string;
@@ -11,23 +13,71 @@ interface CreateOptions {
   dimension?: string[];
 }
 
-async function createAction(title: string, options: CreateOptions): Promise<void> {
+async function readStdin(): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString('utf-8');
+}
+
+function readFromFile(path: string): string {
+  return readFileSync(path, 'utf-8');
+}
+
+async function createAction(titleOrFile: string | undefined, options: CreateOptions): Promise<void> {
   try {
     const project = requireProject(options.project);
     const token = requireToken();
     const board = resolveBoard(options.board, project);
 
-    const dimensions = parseDimensions(options.dimension);
+    let title: string;
+    let specification: string | undefined;
+    let fileDimensions: Record<string, unknown> = {};
+    const cliDimensions = parseDimensions(options.dimension);
+
+    if (!titleOrFile) {
+      // No argument - read from stdin
+      if (process.stdin.isTTY) {
+        console.error('Error: No title provided. Use a title argument, @file.md, or pipe content.');
+        process.exit(1);
+        return;
+      }
+      const content = await readStdin();
+      const parsed = parseStoryMarkdown(content);
+      title = parsed.title;
+      specification = parsed.specification;
+      fileDimensions = parsed.dimensions ?? {};
+    } else if (titleOrFile.startsWith('@')) {
+      // @file.md syntax - read from file
+      const filePath = titleOrFile.slice(1);
+      if (!filePath) {
+        console.error('Error: No file path provided after @');
+        process.exit(1);
+        return;
+      }
+      const content = readFromFile(filePath);
+      const parsed = parseStoryMarkdown(content);
+      title = parsed.title;
+      specification = parsed.specification;
+      fileDimensions = parsed.dimensions ?? {};
+    } else {
+      // Plain title argument
+      title = titleOrFile;
+    }
 
     const api = createClient(project, token);
     const input = {
       title,
-      ...dimensions,
+      specification,
+      ...fileDimensions,
+      ...cliDimensions,  // CLI dimensions override file dimensions
     };
     const story = await api.createStory(board, input);
 
     // Display created card in table format (like ls does)
-    const columns = ['identifier', 'title', ...Object.keys(dimensions)];
+    const allDimensions = { ...fileDimensions, ...cliDimensions };
+    const columns = ['identifier', 'title', ...Object.keys(allDimensions)];
     printTable([story], columns);
   } catch (error) {
     if (error instanceof KlaroApiError) {
@@ -44,7 +94,7 @@ async function createAction(title: string, options: CreateOptions): Promise<void
 export function createCreateCommand(): Command {
   return new Command('create')
     .description('Create a new card in a board')
-    .argument('<title>', 'Card title')
+    .argument('[title]', 'Card title, or @file.md to read from file, or pipe from stdin')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
     .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-d, --dimension <key=value>', 'Set a dimension value (can be used multiple times)',
