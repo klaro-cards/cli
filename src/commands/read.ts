@@ -3,44 +3,11 @@ import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard } from '../lib/defaults.js';
 import { renderMarkdown } from '../utils/markdown.js';
-import type { Story } from '../lib/types.js';
+import { formatStoryMarkdown } from '../utils/story-markdown.js';
 
 interface ReadOptions {
   board?: string;
   project?: string;
-}
-
-/**
- * Format a story as markdown output.
- *
- * - toptitle: first line of the title
- * - summary: remaining lines of the title (if any)
- * - description: the specification field
- */
-export function formatStoryMarkdown(story: Story): string {
-  const lines: string[] = [];
-
-  // Split title into toptitle and summary
-  const titleLines = story.title.split('\n');
-  const toptitle = titleLines[0];
-  const summary = titleLines.slice(1).join('\n').trim();
-
-  // Header with toptitle
-  lines.push(`# ${toptitle}`);
-  lines.push('');
-
-  // Summary if present
-  if (summary) {
-    lines.push(summary);
-    lines.push('');
-  }
-
-  // Description (specification)
-  if (story.specification) {
-    lines.push(story.specification);
-  }
-
-  return lines.join('\n');
 }
 
 async function readAction(identifiers: string[], options: ReadOptions): Promise<void> {

@@ -29,7 +29,8 @@ vi.mock('../../src/utils/markdown.js', () => ({
 import { requireProject, requireToken } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard } from '../../src/lib/defaults.js';
-import { createReadCommand, formatStoryMarkdown } from '../../src/commands/read.js';
+import { createReadCommand } from '../../src/commands/read.js';
+import { formatStoryMarkdown } from '../../src/utils/story-markdown.js';
 
 describe('formatStoryMarkdown', () => {
   it('should format story with title only', () => {
