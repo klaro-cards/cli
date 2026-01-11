@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard } from '../lib/defaults.js';
+import { resolveBoard, resolveShow } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
 import { printTable } from '../utils/table.js';
 import { parseStoryMarkdown } from '../utils/story-markdown.js';
@@ -11,6 +11,7 @@ interface CreateOptions {
   board?: string;
   project?: string;
   dimension?: string[];
+  show?: string;
 }
 
 async function readStdin(): Promise<string> {
@@ -25,11 +26,12 @@ function readFromFile(path: string): string {
   return readFileSync(path, 'utf-8');
 }
 
-async function createAction(titleOrFile: string | undefined, options: CreateOptions): Promise<void> {
+async function createAction(titleOrFile: string | undefined, options: CreateOptions, command: Command): Promise<void> {
   try {
+    const globalOpts = command.optsWithGlobals();
     const project = requireProject(options.project);
     const token = requireToken();
-    const board = resolveBoard(options.board, project);
+    const board = resolveBoard(globalOpts.board ?? options.board, project);
 
     let title: string;
     let specification: string | undefined;
@@ -76,8 +78,9 @@ async function createAction(titleOrFile: string | undefined, options: CreateOpti
     const story = await api.createStory(board, input);
 
     // Display created card in table format (like ls does)
-    const allDimensions = { ...fileDimensions, ...cliDimensions };
-    const columns = ['identifier', 'title', ...Object.keys(allDimensions)];
+    const showOpt = resolveShow(globalOpts.show ?? options.show, project);
+    const showDimensions = showOpt?.split(',').map((d: string) => d.trim()) ?? [];
+    const columns = ['identifier', 'title', ...showDimensions];
     printTable([story], columns);
   } catch (error) {
     if (error instanceof KlaroApiError) {
@@ -99,5 +102,6 @@ export function createCreateCommand(): Command {
     .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-d, --dimension <key=value>', 'Set a dimension value (can be used multiple times)',
       (value, previous: string[]) => previous.concat([value]), [])
+    .option('--show <dimensions>', 'Dimensions to display in output (comma-separated)')
     .action(createAction);
 }

@@ -20,6 +20,7 @@ vi.mock('../../src/lib/api.js', () => ({
 
 vi.mock('../../src/lib/defaults.js', () => ({
   resolveBoard: vi.fn(),
+  resolveShow: vi.fn(),
 }));
 
 import { requireProject, requireToken } from '../../src/lib/config.js';
