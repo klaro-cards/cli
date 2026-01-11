@@ -4,6 +4,7 @@ import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard, resolveShow } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
+import { editStoryInEditor } from '../utils/story-editor.js';
 import { printTable } from '../utils/table.js';
 import { parseStoryMarkdown } from '../utils/story-markdown.js';
 
@@ -12,6 +13,7 @@ interface CreateOptions {
   project?: string;
   dimension?: string[];
   show?: string;
+  edit?: boolean;
 }
 
 async function readStdin(): Promise<string> {
@@ -75,13 +77,34 @@ async function createAction(titleOrFile: string | undefined, options: CreateOpti
       ...fileDimensions,
       ...cliDimensions,  // CLI dimensions override file dimensions
     };
-    const story = await api.createStory(board, input);
+    let story = await api.createStory(board, input);
 
-    // Display created card in table format (like ls does)
-    const showOpt = resolveShow(globalOpts.show ?? options.show, project);
-    const showDimensions = showOpt?.split(',').map((d: string) => d.trim()) ?? [];
-    const columns = ['identifier', 'title', ...showDimensions];
-    printTable([story], columns);
+    // If --edit flag is set, open the card in editor immediately
+    if (options.edit) {
+      const showOpt = resolveShow(globalOpts.show ?? options.show, project);
+      const dimensions = showOpt?.split(',').map((d: string) => d.trim());
+      const result = editStoryInEditor(story, dimensions);
+
+      if (result.error) {
+        console.error(result.error);
+        process.exit(1);
+        return;
+      }
+
+      if (result.changed && result.update) {
+        const updated = await api.updateStories(board, [result.update]);
+        story = updated[0];
+        console.log(`Card ${story.identifier} created and updated.`);
+      } else {
+        console.log(`Card ${story.identifier} created (no edits made).`);
+      }
+    } else {
+      // Display created card in table format (like ls does)
+      const showOpt = resolveShow(globalOpts.show ?? options.show, project);
+      const showDimensions = showOpt?.split(',').map((d: string) => d.trim()) ?? [];
+      const columns = ['identifier', 'title', ...showDimensions];
+      printTable([story], columns);
+    }
   } catch (error) {
     if (error instanceof KlaroApiError) {
       console.error(`Error: ${error.message}`);
@@ -103,5 +126,6 @@ export function createCreateCommand(): Command {
     .option('-d, --dimension <key=value>', 'Set a dimension value (can be used multiple times)',
       (value, previous: string[]) => previous.concat([value]), [])
     .option('--show <dimensions>', 'Dimensions to display in output (comma-separated)')
+    .option('-e, --edit', 'Open the card in editor immediately after creation')
     .action(createAction);
 }

@@ -23,7 +23,12 @@ vi.mock('../../src/lib/defaults.js', () => ({
   resolveShow: vi.fn(),
 }));
 
+vi.mock('../../src/utils/story-editor.js', () => ({
+  editStoryInEditor: vi.fn(),
+}));
+
 import { requireProject, requireToken } from '../../src/lib/config.js';
+import { editStoryInEditor } from '../../src/utils/story-editor.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard } from '../../src/lib/defaults.js';
 import { createCreateCommand } from '../../src/commands/create.js';
@@ -165,5 +170,102 @@ describe('create command', () => {
     await cmd.parseAsync(['node', 'test', 'New card', '-b', 'sprint-1']);
 
     expect(mockResolveBoard).toHaveBeenCalledWith('sprint-1', 'myproject');
+  });
+
+  describe('--edit flag', () => {
+    const mockEditStoryInEditor = vi.mocked(editStoryInEditor);
+
+    it('should open editor after creating card with --edit', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+      mockResolveBoard.mockReturnValue('backlog');
+
+      const mockCreateStory = vi.fn().mockResolvedValue({
+        id: 1,
+        identifier: '42',
+        title: 'New card',
+      });
+      mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
+
+      // Editor returns no changes
+      mockEditStoryInEditor.mockReturnValue({ changed: false });
+
+      const cmd = createCreateCommand();
+      await cmd.parseAsync(['node', 'test', 'New card', '-e']);
+
+      expect(mockCreateStory).toHaveBeenCalledWith('backlog', { title: 'New card' });
+      expect(mockEditStoryInEditor).toHaveBeenCalledWith(
+        expect.objectContaining({ identifier: '42', title: 'New card' }),
+        undefined
+      );
+      expect(consoleSpy).toHaveBeenCalledWith('Card 42 created (no edits made).');
+    });
+
+    it('should update card when editor content changes', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+      mockResolveBoard.mockReturnValue('backlog');
+
+      const mockCreateStory = vi.fn().mockResolvedValue({
+        id: 1,
+        identifier: '42',
+        title: 'New card',
+      });
+      const mockUpdateStories = vi.fn().mockResolvedValue([{
+        id: 1,
+        identifier: '42',
+        title: 'Updated title',
+        specification: 'Added description',
+      }]);
+      mockCreateClient.mockReturnValue({
+        createStory: mockCreateStory,
+        updateStories: mockUpdateStories,
+      } as any);
+
+      // Editor returns changes
+      mockEditStoryInEditor.mockReturnValue({
+        changed: true,
+        update: {
+          identifier: 42,
+          title: 'Updated title',
+          specification: 'Added description',
+        },
+      });
+
+      const cmd = createCreateCommand();
+      await cmd.parseAsync(['node', 'test', 'New card', '--edit']);
+
+      expect(mockUpdateStories).toHaveBeenCalledWith('backlog', [{
+        identifier: 42,
+        title: 'Updated title',
+        specification: 'Added description',
+      }]);
+      expect(consoleSpy).toHaveBeenCalledWith('Card 42 created and updated.');
+    });
+
+    it('should exit with error when editor fails', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+      mockResolveBoard.mockReturnValue('backlog');
+
+      const mockCreateStory = vi.fn().mockResolvedValue({
+        id: 1,
+        identifier: '42',
+        title: 'New card',
+      });
+      mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
+
+      // Editor returns error
+      mockEditStoryInEditor.mockReturnValue({
+        changed: false,
+        error: 'Editor exited with an error',
+      });
+
+      const cmd = createCreateCommand();
+      await cmd.parseAsync(['node', 'test', 'New card', '-e']);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Editor exited with an error');
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
   });
 });

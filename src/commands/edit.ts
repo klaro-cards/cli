@@ -3,9 +3,7 @@ import { createClient, KlaroApiError } from '../lib/api.js';
 import type { UpdateStoryInput } from '../lib/types.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard, resolveShow } from '../lib/defaults.js';
-import { formatStoryMarkdown, parseStoryMarkdown } from '../utils/story-markdown.js';
-import { openInEditor } from '../utils/editor.js';
-import { slugify } from '../utils/slugify.js';
+import { editStoryInEditor } from '../utils/story-editor.js';
 
 interface EditOptions {
   board?: string;
@@ -63,40 +61,10 @@ async function editAction(identifiers: string[], options: EditOptions, command: 
     const updates: UpdateStoryInput[] = [];
 
     for (const story of stories) {
-      const markdown = formatStoryMarkdown(story, dimensions);
-      const filename = `${story.identifier}-${slugify(story.title)}.md`;
-      const edited = openInEditor(markdown, filename);
-
-      if (edited === null) {
-        results.push({ identifier: story.identifier, changed: false, error: 'Editor exited with an error' });
-        continue;
-      }
-
-      if (edited.trim() === markdown.trim()) {
-        results.push({ identifier: story.identifier, changed: false });
-        continue;
-      }
-
-      try {
-        const parsed = parseStoryMarkdown(edited);
-        const update: UpdateStoryInput = {
-          identifier: parseInt(story.identifier, 10),
-          title: parsed.title,
-          specification: parsed.specification ?? '',
-        };
-        // Add dimensions if present
-        if (parsed.dimensions) {
-          for (const [key, value] of Object.entries(parsed.dimensions)) {
-            if (typeof value === 'string' || typeof value === 'number') {
-              update[key] = value;
-            }
-          }
-        }
-        updates.push(update);
-        results.push({ identifier: story.identifier, changed: true });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to parse edited content';
-        results.push({ identifier: story.identifier, changed: false, error: message });
+      const result = editStoryInEditor(story, dimensions);
+      results.push({ identifier: story.identifier, ...result });
+      if (result.update) {
+        updates.push(result.update);
       }
     }
 
