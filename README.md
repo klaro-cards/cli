@@ -209,13 +209,50 @@ All commands support these global options:
 
 ## Configuration File
 
-Configuration is stored in `~/.klaro/config.json`. This includes:
+Configuration is stored in a `.klaro` directory with two files:
 
-- Authentication token
-- Default project
-- Per-project default options
+- `config.json` - Project settings (can be committed to version control)
+- `secrets.json` - Authentication token (should NOT be committed)
 
-You can override the config directory by setting the `KLARO_HOME` environment variable.
+### Config Directory Resolution
+
+The CLI looks for configuration in this order:
+
+1. `./.klaro/` - Local directory (for project-specific config)
+2. `~/.klaro/` - Home directory (global config)
+
+This allows you to commit project-specific settings (like default board) to your repository while keeping your auth token secure in the global config.
+
+### Example: Project-Specific Config
+
+```bash
+# Create local config directory
+mkdir .klaro
+
+# Add to .gitignore
+echo "secrets.json" >> .klaro/.gitignore
+
+# Set project-specific defaults
+klaro config set board backlog
+klaro config set show progress,assignee
+```
+
+The `config.json` can be committed:
+```json
+{
+  "project": "myproject",
+  "projectDefaults": {
+    "myproject": {
+      "board": "backlog",
+      "show": "progress,assignee"
+    }
+  }
+}
+```
+
+### Environment Variables
+
+- `KLARO_HOME` - Override the home directory for global config lookup
 
 ## Development
 

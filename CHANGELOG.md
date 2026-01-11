@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `config unset <key>` - Remove per-project defaults
   - `config list` - Show current configuration
   - Configurable defaults for `board` and `show` options
+  - Split config into `config.json` (committable) and `secrets.json` (tokens)
+  - Local `.klaro/` directory support for project-specific config
 
 - **Developer features**
   - `--trace` global option for API debugging

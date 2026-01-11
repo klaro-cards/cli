@@ -3,6 +3,10 @@ export interface ProjectDefaults {
   show?: string;
 }
 
+export interface Secrets {
+  token?: string;
+}
+
 export interface Config {
   token?: string;
   project?: string;
