@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import type { UpdateStoryInput } from '../lib/types.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard } from '../lib/defaults.js';
+import { resolveBoard, resolveShow } from '../lib/defaults.js';
 import { formatStoryMarkdown, parseStoryMarkdown } from '../utils/story-markdown.js';
 import { openInEditor } from '../utils/editor.js';
 import { slugify } from '../utils/slugify.js';
@@ -55,7 +55,7 @@ async function editAction(identifiers: string[], options: EditOptions, command: 
     const storyMap = new Map(fetchedStories.map(s => [String(s.identifier), s]));
     const stories = numericIds.map(id => storyMap.get(String(id))).filter(s => s !== undefined);
 
-    const showOpt = globalOpts.show ?? options.show;
+    const showOpt = resolveShow(globalOpts.show ?? options.show, project);
     const dimensions = showOpt?.split(',').map((d: string) => d.trim());
 
     // Process each story sequentially

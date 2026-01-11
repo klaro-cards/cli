@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard } from '../lib/defaults.js';
+import { resolveBoard, resolveShow } from '../lib/defaults.js';
 import { renderMarkdown } from '../utils/markdown.js';
 import { formatStoryMarkdown } from '../utils/story-markdown.js';
 
@@ -67,7 +67,7 @@ async function readAction(identifiers: string[], options: ReadOptions, command: 
     }
 
     // Output each story as markdown
-    const showOpt = globalOpts.show ?? options.show;
+    const showOpt = resolveShow(globalOpts.show ?? options.show, project);
     const dimensions = showOpt?.split(',').map((d: string) => d.trim());
     const parts = stories.map(s => {
       const md = formatStoryMarkdown(s, dimensions);
