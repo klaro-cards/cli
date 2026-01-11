@@ -14,6 +14,8 @@ import { createEditCommand } from './commands/edit.js';
 import { createConfigCommand } from './commands/config.js';
 import { createInitCommand } from './commands/init.js';
 import { setTrace } from './lib/trace.js';
+import { getProject } from './lib/config.js';
+import { setProjectDefault } from './lib/defaults.js';
 
 const program = new Command();
 
@@ -24,10 +26,22 @@ program
   .option('--trace', 'Enable API request/response tracing')
   .option('--show <dimensions>', 'Dimensions to display (comma-separated)')
   .option('--board <board>', 'Board identifier')
+  .option('--save-defaults', 'Save --show and --board as project defaults')
   .hook('preAction', (thisCommand) => {
     const opts = thisCommand.optsWithGlobals();
     if (opts.trace) {
       setTrace(true);
+    }
+    if (opts.saveDefaults) {
+      const project = getProject();
+      if (project) {
+        if (opts.show) {
+          setProjectDefault(project, 'show', opts.show);
+        }
+        if (opts.board) {
+          setProjectDefault(project, 'board', opts.board);
+        }
+      }
     }
   });
 
