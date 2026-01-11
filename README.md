@@ -54,6 +54,26 @@ Display information about the currently logged-in user.
 klaro whoami
 ```
 
+### Setup
+
+#### `klaro init [folder]`
+
+Initialize Klaro configuration. Creates a `.klaro` directory with config files.
+
+```bash
+# Interactive - asks whether to create global or local config
+klaro init
+
+# Create local config in current directory
+klaro init .
+
+# Create local config in specific directory
+klaro init ./my-project
+
+# Set project during init
+klaro init . -p myproject
+```
+
 ### Project Management
 
 #### `klaro use <project>`

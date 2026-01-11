@@ -10,6 +10,7 @@ import { createCreateCommand } from './commands/create.js';
 import { createDelCommand } from './commands/del.js';
 import { createSetCommand } from './commands/set.js';
 import { createConfigCommand } from './commands/config.js';
+import { createInitCommand } from './commands/init.js';
 import { setTrace } from './lib/trace.js';
 
 const program = new Command();
@@ -35,5 +36,6 @@ program.addCommand(createCreateCommand());
 program.addCommand(createDelCommand());
 program.addCommand(createSetCommand());
 program.addCommand(createConfigCommand());
+program.addCommand(createInitCommand());
 
 program.parse();

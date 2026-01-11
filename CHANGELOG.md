@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `del <identifiers...>` - Delete one or more cards
 
 - **Configuration system**
+  - `init [folder]` - Initialize config (interactive, local, or in specific folder)
   - `config set <key> <value>` - Set per-project defaults
   - `config unset <key>` - Remove per-project defaults
   - `config list` - Show current configuration
