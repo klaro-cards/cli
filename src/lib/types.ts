@@ -65,3 +65,11 @@ export interface UpdateStoryInput {
   identifier: number;
   [key: string]: string | number | undefined;
 }
+
+export interface Dimension {
+  code: string;
+  name: string;
+  datatype: string;
+  values?: Array<{ id: number | null; code: string; label?: string }>;
+  [key: string]: unknown;
+}

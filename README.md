@@ -30,7 +30,7 @@ Commands:
   logout                            Logout from Klaro Cards
   whoami                            Show the currently logged in user
   use <subdomain>                   Set the default Klaro project
-  ls                                List cards, projects, or boards
+  ls                                List cards, projects, boards, or dimensions
   create [options] [title]          Create a new card in a board
   del [options] <identifiers...>    Delete one or more cards by identifier
   set [options] <identifiers...>    Update one or more cards by identifier

@@ -21,6 +21,10 @@ interface LsBoardsOptions {
   project?: string;
 }
 
+interface LsDimensionsOptions {
+  project?: string;
+}
+
 async function lsCardsAction(options: LsCardsOptions, command: Command): Promise<void> {
   try {
     const globalOpts = command.optsWithGlobals();
@@ -118,6 +122,53 @@ async function lsBoardsAction(options: LsBoardsOptions): Promise<void> {
   }
 }
 
+function formatValues(values: Array<{ id: number | null; code: string; label?: string }> | undefined): string {
+  if (!values || values.length === 0) {
+    return '';
+  }
+  const filtered = values.filter(v => v.id !== null);
+  const ids = filtered.slice(0, 6).map(v => v.id);
+  return filtered.length > 6 ? `${ids.join(', ')}, ...` : ids.join(', ');
+}
+
+const HIDDEN_DIMENSIONS = ['identifier', 'title', 'specification'];
+
+async function lsDimensionsAction(options: LsDimensionsOptions): Promise<void> {
+  try {
+    const project = requireProject(options.project);
+    const token = requireToken();
+
+    const api = createClient(project, token);
+    const allDimensions = await api.listDimensions();
+    const dimensions = allDimensions.filter(d => !HIDDEN_DIMENSIONS.includes(d.code));
+
+    if (dimensions.length === 0) {
+      console.log('No dimensions found.');
+      return;
+    }
+
+    // Format values for display
+    const dimensionsWithValues = dimensions.map(dim => ({
+      ...dim,
+      values: formatValues(dim.values),
+    }));
+
+    const columns = ['code', 'name', 'datatype', 'values'];
+    printTable(dimensionsWithValues, columns);
+
+    console.log(`\nShowing ${dimensions.length} dimension(s)`);
+  } catch (error) {
+    if (error instanceof KlaroApiError) {
+      console.error(`Error: ${error.message}`);
+    } else if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+    } else {
+      console.error('An unexpected error occurred');
+    }
+    process.exit(1);
+  }
+}
+
 function createCardsSubcommand(isDefault = false): Command {
   const cmd = new Command('cards')
     .description('List cards in a board' + (isDefault ? ' (default)' : ''))
@@ -145,13 +196,21 @@ function createBoardsSubcommand(): Command {
     .action(lsBoardsAction);
 }
 
+function createDimensionsSubcommand(): Command {
+  return new Command('dimensions')
+    .description('List dimensions')
+    .option('-p, --project <subdomain>', 'Project subdomain')
+    .action(lsDimensionsAction);
+}
+
 export function createLsCommand(): Command {
   const cmd = new Command('ls')
-    .description('List cards, projects, or boards');
+    .description('List cards, projects, boards, or dimensions');
 
   cmd.addCommand(createCardsSubcommand(true), { isDefault: true });
   cmd.addCommand(createProjectsSubcommand());
   cmd.addCommand(createBoardsSubcommand());
+  cmd.addCommand(createDimensionsSubcommand());
 
   return cmd;
 }
