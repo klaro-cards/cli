@@ -192,10 +192,10 @@ describe.skipIf(!canRun)('CLI Acceptance tests', () => {
       const timestamp = Date.now();
       const title = `CLI test card with dims ${timestamp}`;
 
-      const result = await runCli(['create', title, '-b', BOARD, '-d', 'progress=todo']);
+      const result = await runCli(['create', title, '-b', BOARD, '-d', 'progress=todo', '--show', 'progress']);
 
       expect(result.exitCode).toBe(0);
-      // Table output should contain dimension column
+      // Table output should contain dimension column (when using --show)
       expect(result.stdout).toContain('identifier');
       expect(result.stdout).toContain('progress');
       expect(result.stdout).toContain('todo');

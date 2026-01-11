@@ -1,77 +1,82 @@
 import { Command } from 'commander';
+import { Bmg } from '@enspirit/bmg-js';
+import { renderMarkdown } from '../utils/markdown.js';
 
-const CHEATSHEET = `# Klaro CLI
-
-Klaro CLI is a command-line interface for managing cards on Klaro Cards.
+const INTRO = `Klaro CLI is a command-line interface for managing cards on Klaro Cards.
 It is designed to be AI-agent friendly, enabling seamless integration with
-tools like Claude Code for backlog, task and project management workflows.
+tools like Claude Code for backlog, task and project management workflows.`;
 
-## Setup
-
-klaro init .                     # Initialize klaro in current directory
-klaro login                      # Authenticate with email/password
-klaro use <project>              # Set active project by subdomain
-
-## Listing cards
-
-klaro ls                         # List cards (default board: all)
-klaro ls -b backlog              # List from specific board
-klaro ls --show progress         # Show specific dimensions
-klaro ls --filter status=open    # Filter by dimension value
-
-## Reading cards
-
-klaro read 1                     # Read card as markdown
-klaro read 1 2 3                 # Read multiple cards
-klaro read 1 --show progress     # Include dimensions in output
-
-## Editing cards
-
-klaro edit 1                     # Edit card in $EDITOR
-klaro edit 1 2 3                 # Edit multiple cards sequentially
-klaro edit 1 --show progress     # Include dimensions in editor
-
-## Creating cards
-
-klaro create "Card title"        # Create new card with title
-klaro create @card.md            # Create from markdown file
-cat card.md | klaro create       # Create from stdin
-klaro create "Title" -b backlog  # Create in specific board
-
-## Duplicating cards
-
-klaro read 3 | klaro create                            # Duplicate card 3
-klaro read 3 --show assignee | klaro create -d assignee=Bob  # Duplicate and reassign
-
-## Updating cards
-
-klaro set 1 progress=done        # Update a dimension
-klaro set 1 2 3 progress=done    # Update multiple cards
-klaro del 1                      # Delete a card
-
-## Saving defaults
-
-Many commands use --show, --board. You can set default values for them.
-
-klaro config set board backlog              # Set a default --board option
-klaro config set show progress,assignee     # Set default --show option
-klaro --save-defaults ls --show progress    # Save defaults as you go
-klaro config list                           # View saved defaults
-
-## Tips
-
-- Use \`--raw\` with \`read\` to get plain markdown without highlighting
+const TIPS = `- Use \`--raw\` with \`read\` to get plain markdown without highlighting
 - Cards are identified by their numeric identifier (shown in ls output)
 - Most commands support \`-p <project>\` to override the active project
 
 Run \`klaro --help\` for all available commands and options.
-Run \`klaro <command> --help\` for detailed help on a specific command.
-`;
+Run \`klaro <command> --help\` for detailed help on a specific command.`;
+
+const EXAMPLES = Bmg([
+  { category: 'Setup', example: 'klaro init .', explanation: 'Initialize klaro in current directory' },
+  { category: 'Setup', example: 'klaro login', explanation: 'Authenticate with email/password' },
+  { category: 'Setup', example: 'klaro use <project>', explanation: 'Set active project by subdomain' },
+  { category: 'Listing', example: 'klaro ls', explanation: 'List cards (default board: all)' },
+  { category: 'Listing', example: 'klaro ls -b backlog', explanation: 'List from specific board' },
+  { category: 'Listing', example: 'klaro ls --show progress', explanation: 'Show specific dimensions' },
+  { category: 'Listing', example: 'klaro ls --filter status=open', explanation: 'Filter by dimension value' },
+  { category: 'Reading', example: 'klaro read 1', explanation: 'Read card as markdown' },
+  { category: 'Reading', example: 'klaro read 1 2 3', explanation: 'Read multiple cards' },
+  { category: 'Reading', example: 'klaro read 1 --show progress', explanation: 'Include dimensions in output' },
+  { category: 'Editing', example: 'klaro edit 1', explanation: 'Edit card in $EDITOR' },
+  { category: 'Editing', example: 'klaro edit 1 2 3', explanation: 'Edit multiple cards sequentially' },
+  { category: 'Editing', example: 'klaro edit 1 --show progress', explanation: 'Include dimensions in editor' },
+  { category: 'Creating', example: 'klaro create "Card title"', explanation: 'Create new card with title' },
+  { category: 'Creating', example: 'klaro create @card.md', explanation: 'Create from markdown file' },
+  { category: 'Creating', example: 'cat card.md | klaro create', explanation: 'Create from stdin' },
+  { category: 'Creating', example: 'klaro create "Title" -b backlog', explanation: 'Create in specific board' },
+  { category: 'Duplicating', example: 'klaro read 3 | klaro create', explanation: 'Duplicate card 3' },
+  { category: 'Duplicating', example: 'klaro read 3 | klaro create -d assignee=Bob', explanation: 'Duplicate and reassign' },
+  { category: 'Updating', example: 'klaro set 1 progress=done', explanation: 'Update a dimension' },
+  { category: 'Updating', example: 'klaro set 1 2 3 progress=done', explanation: 'Update multiple cards' },
+  { category: 'Updating', example: 'klaro del 1', explanation: 'Delete a card' },
+  { category: 'Defaults', example: 'klaro config set board backlog', explanation: 'Set default --board option' },
+  { category: 'Defaults', example: 'klaro config set show progress,assignee', explanation: 'Set default --show option' },
+  { category: 'Defaults', example: 'klaro --save-defaults ls --show progress', explanation: 'Save defaults as you go' },
+  { category: 'Defaults', example: 'klaro config list', explanation: 'View saved defaults' },
+]).group(['example', 'explanation'], 'examples', { allbut: true });
+
+function buildCheatsheet(table: boolean): string {
+  const lines: string[] = ['# Klaro CLI', '', INTRO, ''];
+
+  if (table) {
+    lines.push(EXAMPLES.toText({ border: 'rounded' }));
+  } else {
+    for (const { category, examples } of EXAMPLES.tuples) {
+      lines.push(`## ${category}`, '');
+      for (const { example, explanation } of examples.tuples) {
+        lines.push(`${example.padEnd(45)} # ${explanation}`);
+      }
+      lines.push('');
+    }
+  }
+
+  lines.push('## Tips', '', TIPS);
+  return lines.join('\n');
+}
+
+interface CheatsheetOptions {
+  table?: boolean;
+  raw?: boolean;
+}
 
 export function createCheatsheetCommand(): Command {
   return new Command('cheatsheet')
-    .description('Display a quick reference guide for AI agents')
-    .action(() => {
-      console.log(CHEATSHEET);
+    .description('Display a quick reference guide')
+    .option('--table', 'Display in table format (for humans)')
+    .option('--raw', 'Output without syntax highlighting')
+    .action((options: CheatsheetOptions) => {
+      const content = buildCheatsheet(options.table ?? false);
+      if (options.raw) {
+        console.log(content);
+      } else {
+        console.log(renderMarkdown(content));
+      }
     });
 }
