@@ -15,10 +15,10 @@ export class KlaroApiError extends Error {
   }
 }
 
-export function buildHeaders(subdomain: string, token?: string): Record<string, string> {
+export function buildHeaders(subdomain: string, token?: string, accept?: string): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    'Accept': accept || 'application/json',
     'X-Klaro-Project-Subdomain': subdomain,
   };
 
@@ -84,9 +84,9 @@ export class KlaroApi {
     this.token = token;
   }
 
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(method: string, path: string, body?: unknown, accept?: string): Promise<T> {
     const url = `${this.baseUrl}${path}`;
-    const headers = buildHeaders(this.subdomain, this.token);
+    const headers = buildHeaders(this.subdomain, this.token, accept);
     return doFetch<T>(method, url, headers, body);
   }
 
@@ -138,6 +138,15 @@ export class KlaroApi {
     const queryString = params.toString();
     const path = `/boards/${boardId}/stories${queryString ? `?${queryString}` : ''}`;
     return this.request<Story[]>('GET', path);
+  }
+
+  async getStories(boardId: string, identifiers: number[]): Promise<Story[]> {
+    const params = new URLSearchParams();
+    for (const id of identifiers) {
+      params.append('identifier[]', id.toString());
+    }
+    const path = `/boards/${boardId}/stories?${params.toString()}`;
+    return this.request<Story[]>('GET', path, undefined, 'application/vnd+klaro.stories.medium+json');
   }
 
   async createStory(boardId: string, input: CreateStoryInput): Promise<Story> {
