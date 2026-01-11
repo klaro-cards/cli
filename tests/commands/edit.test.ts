@@ -66,7 +66,7 @@ describe('edit command', () => {
     expect(mockGetStories).toHaveBeenCalledWith('all', [12]);
     expect(mockOpenInEditor).toHaveBeenCalledWith(
       '# Original title\n\nOriginal description',
-      'card-12.md'
+      '12-original-title.md'
     );
     expect(mockUpdateStories).toHaveBeenCalledWith('all', [
       { identifier: 12, title: 'New title', specification: 'New description' },
@@ -111,8 +111,8 @@ describe('edit command', () => {
     const cmd = createEditCommand();
     await cmd.parseAsync(['node', 'test', '12']);
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Editor exited with an error');
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error on card 12: Editor exited with an error');
+    expect(consoleSpy).toHaveBeenCalledWith('No changes made.');
   });
 
   it('should handle invalid markdown format', async () => {
@@ -131,8 +131,8 @@ describe('edit command', () => {
     const cmd = createEditCommand();
     await cmd.parseAsync(['node', 'test', '12']);
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Invalid format: first line must be a heading (# title)');
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error on card 12: Invalid format: first line must be a heading (# title)');
+    expect(consoleSpy).toHaveBeenCalledWith('No changes made.');
   });
 
   it('should error when card not found', async () => {
@@ -146,7 +146,7 @@ describe('edit command', () => {
     const cmd = createEditCommand();
     await cmd.parseAsync(['node', 'test', '999']);
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('No card found with the specified identifier');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('No cards found with the specified identifier(s)');
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
@@ -192,5 +192,63 @@ describe('edit command', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Board not found');
     expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('should edit multiple cards sequentially', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('all');
+
+    const mockGetStories = vi.fn().mockResolvedValue([
+      { id: 1, identifier: '10', title: 'Card 10', specification: 'Desc 10', createdAt: '', updatedAt: '' },
+      { id: 2, identifier: '20', title: 'Card 20', specification: 'Desc 20', createdAt: '', updatedAt: '' },
+      { id: 3, identifier: '30', title: 'Card 30', specification: 'Desc 30', createdAt: '', updatedAt: '' },
+    ]);
+    const mockUpdateStories = vi.fn().mockResolvedValue([]);
+    mockCreateClient.mockReturnValue({ getStories: mockGetStories, updateStories: mockUpdateStories } as any);
+
+    // First card: changed, second: unchanged, third: changed
+    mockOpenInEditor
+      .mockReturnValueOnce('# Card 10 updated\n\nNew desc 10')
+      .mockReturnValueOnce('# Card 20\n\nDesc 20')  // unchanged
+      .mockReturnValueOnce('# Card 30 updated\n\nNew desc 30');
+
+    const cmd = createEditCommand();
+    await cmd.parseAsync(['node', 'test', '10', '20', '30']);
+
+    expect(mockGetStories).toHaveBeenCalledWith('all', [10, 20, 30]);
+    expect(mockOpenInEditor).toHaveBeenCalledTimes(3);
+    expect(mockUpdateStories).toHaveBeenCalledWith('all', [
+      { identifier: 10, title: 'Card 10 updated', specification: 'New desc 10' },
+      { identifier: 30, title: 'Card 30 updated', specification: 'New desc 30' },
+    ]);
+    expect(consoleSpy).toHaveBeenCalledWith('Cards 10, 30 updated successfully.');
+  });
+
+  it('should handle mixed results with errors', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('all');
+
+    const mockGetStories = vi.fn().mockResolvedValue([
+      { id: 1, identifier: '10', title: 'Card 10', createdAt: '', updatedAt: '' },
+      { id: 2, identifier: '20', title: 'Card 20', createdAt: '', updatedAt: '' },
+    ]);
+    const mockUpdateStories = vi.fn().mockResolvedValue([]);
+    mockCreateClient.mockReturnValue({ getStories: mockGetStories, updateStories: mockUpdateStories } as any);
+
+    // First card: changed, second: editor error
+    mockOpenInEditor
+      .mockReturnValueOnce('# Card 10 updated\n\nNew desc')
+      .mockReturnValueOnce(null);
+
+    const cmd = createEditCommand();
+    await cmd.parseAsync(['node', 'test', '10', '20']);
+
+    expect(mockUpdateStories).toHaveBeenCalledWith('all', [
+      { identifier: 10, title: 'Card 10 updated', specification: 'New desc' },
+    ]);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error on card 20: Editor exited with an error');
+    expect(consoleSpy).toHaveBeenCalledWith('Card 10 updated successfully.');
   });
 });
