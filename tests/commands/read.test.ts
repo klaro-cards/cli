@@ -25,6 +25,7 @@ vi.mock('../../src/lib/defaults.js', () => ({
 
 vi.mock('../../src/utils/markdown.js', () => ({
   renderMarkdown: vi.fn((text: string) => text),
+  renderMarkdownWithFrontmatter: vi.fn((text: string) => text),
 }));
 
 import { requireProject, requireToken } from '../../src/lib/config.js';

@@ -3,6 +3,7 @@ import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard, resolveShow } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
+import { formatDimensionValues } from '../utils/format.js';
 import { printTable } from '../utils/table.js';
 
 interface LsCardsOptions {
@@ -122,15 +123,6 @@ async function lsBoardsAction(options: LsBoardsOptions): Promise<void> {
   }
 }
 
-function formatValues(values: Array<{ id: number | null; code: string; label?: string }> | undefined): string {
-  if (!values || values.length === 0) {
-    return '';
-  }
-  const filtered = values.filter(v => v.id !== null);
-  const ids = filtered.slice(0, 6).map(v => v.id);
-  return filtered.length > 6 ? `${ids.join(', ')}, ...` : ids.join(', ');
-}
-
 const HIDDEN_DIMENSIONS = ['identifier', 'title', 'specification'];
 
 async function lsDimensionsAction(options: LsDimensionsOptions): Promise<void> {
@@ -150,7 +142,7 @@ async function lsDimensionsAction(options: LsDimensionsOptions): Promise<void> {
     // Format values for display
     const dimensionsWithValues = dimensions.map(dim => ({
       ...dim,
-      values: formatValues(dim.values),
+      values: formatDimensionValues(dim.values),
     }));
 
     const columns = ['code', 'name', 'datatype', 'values'];

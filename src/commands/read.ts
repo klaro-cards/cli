@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard, resolveShow } from '../lib/defaults.js';
-import { renderMarkdown } from '../utils/markdown.js';
+import { renderMarkdownWithFrontmatter } from '../utils/markdown.js';
 import { formatStoryMarkdown } from '../utils/story-markdown.js';
 
 interface ReadOptions {
@@ -10,30 +10,6 @@ interface ReadOptions {
   project?: string;
   show?: string;
   raw?: boolean;
-}
-
-/**
- * Render markdown with optional highlighting.
- * Frontmatter is preserved as-is (not rendered as markdown).
- */
-function renderOutput(markdown: string, raw: boolean): string {
-  if (raw) {
-    return markdown;
-  }
-
-  // Extract frontmatter to avoid it being rendered as markdown
-  let frontmatter = '';
-  let content = markdown;
-
-  if (markdown.startsWith('---')) {
-    const endIndex = markdown.indexOf('---', 3);
-    if (endIndex !== -1) {
-      frontmatter = markdown.slice(0, endIndex + 3) + '\n\n';
-      content = markdown.slice(endIndex + 3).trim();
-    }
-  }
-
-  return frontmatter + renderMarkdown(content);
 }
 
 async function readAction(identifiers: string[], options: ReadOptions, command: Command): Promise<void> {
@@ -71,7 +47,7 @@ async function readAction(identifiers: string[], options: ReadOptions, command: 
     const dimensions = showOpt?.split(',').map((d: string) => d.trim());
     const parts = stories.map(s => {
       const md = formatStoryMarkdown(s, dimensions);
-      return renderOutput(md, options.raw ?? false);
+      return renderMarkdownWithFrontmatter(md, options.raw ?? false);
     });
     const output = parts.join('\n---\n\n');
     process.stdout.write(output);

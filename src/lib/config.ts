@@ -2,6 +2,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { Config, Secrets } from './types.js';
+import { deepMerge } from '../utils/objects.js';
 
 const CONFIG_FILE = 'config.json';
 const SECRETS_FILE = 'secrets.json';
@@ -65,31 +66,6 @@ function writeJsonFile(filePath: string, data: unknown): void {
     mkdirSync(dir, { recursive: true });
   }
   writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-function deepMerge<T extends object>(target: T, source: Partial<T>): T {
-  const result = { ...target } as T;
-  for (const key of Object.keys(source) as Array<keyof T>) {
-    const sourceValue = source[key];
-    const targetValue = result[key];
-    if (
-      sourceValue !== undefined &&
-      typeof sourceValue === 'object' &&
-      sourceValue !== null &&
-      !Array.isArray(sourceValue) &&
-      typeof targetValue === 'object' &&
-      targetValue !== null &&
-      !Array.isArray(targetValue)
-    ) {
-      result[key] = deepMerge(
-        targetValue as object,
-        sourceValue as object
-      ) as T[keyof T];
-    } else if (sourceValue !== undefined) {
-      result[key] = sourceValue as T[keyof T];
-    }
-  }
-  return result;
 }
 
 export function readConfig(): Config {
