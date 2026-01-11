@@ -13,6 +13,7 @@ import { createReadCommand } from './commands/read.js';
 import { createEditCommand } from './commands/edit.js';
 import { createConfigCommand } from './commands/config.js';
 import { createInitCommand } from './commands/init.js';
+import { createCheatsheetCommand } from './commands/cheatsheet.js';
 import { setTrace } from './lib/trace.js';
 import { getProject } from './lib/config.js';
 import { setProjectDefault } from './lib/defaults.js';
@@ -57,5 +58,6 @@ program.addCommand(createReadCommand());
 program.addCommand(createEditCommand());
 program.addCommand(createConfigCommand());
 program.addCommand(createInitCommand());
+program.addCommand(createCheatsheetCommand());
 
 program.parse();
