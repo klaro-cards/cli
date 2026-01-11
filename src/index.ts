@@ -14,6 +14,8 @@ import { createEditCommand } from './commands/edit.js';
 import { createConfigCommand } from './commands/config.js';
 import { createInitCommand } from './commands/init.js';
 import { createCheatsheetCommand } from './commands/cheatsheet.js';
+import { createFetchCommand } from './commands/fetch.js';
+import { createSyncCommand } from './commands/sync.js';
 import { setTrace } from './lib/trace.js';
 import { getProject } from './lib/config.js';
 import { setProjectDefault } from './lib/defaults.js';
@@ -59,5 +61,7 @@ program.addCommand(createEditCommand());
 program.addCommand(createConfigCommand());
 program.addCommand(createInitCommand());
 program.addCommand(createCheatsheetCommand());
+program.addCommand(createFetchCommand());
+program.addCommand(createSyncCommand());
 
 program.parse();

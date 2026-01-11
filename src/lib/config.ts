@@ -23,7 +23,7 @@ function findConfigDir(): string {
   return getGlobalConfigDir();
 }
 
-function getConfigDir(): string {
+export function getConfigDir(): string {
   return findConfigDir();
 }
 
