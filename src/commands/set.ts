@@ -1,9 +1,9 @@
 import { Command } from 'commander';
-import { Bmg } from '@enspirit/bmg-js';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
+import { printTable } from '../utils/table.js';
 
 interface SetOptions {
   board?: string;
@@ -44,8 +44,7 @@ async function setAction(identifiers: string[], options: SetOptions): Promise<vo
 
     if (stories.length > 0) {
       const columns = ['identifier', 'title', ...Object.keys(dimensions)];
-      const output = Bmg(stories).project(columns).toText();
-      console.log(output);
+      printTable(stories, columns);
     }
   } catch (error) {
     if (error instanceof KlaroApiError) {

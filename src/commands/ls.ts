@@ -1,9 +1,9 @@
 import { Command } from 'commander';
-import { Bmg } from '@enspirit/bmg-js';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard, resolveShow } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
+import { printTable } from '../utils/table.js';
 
 interface LsCardsOptions {
   board?: string;
@@ -44,9 +44,7 @@ async function lsCardsAction(options: LsCardsOptions): Promise<void> {
       columns.push(...show.split(',').map(d => d.trim()));
     }
 
-    // Project to selected columns only
-    const output = Bmg(stories).project(columns).toText();
-    console.log(output);
+    printTable(stories, columns);
 
     console.log(`\nShowing ${stories.length} card(s) in board ${board}`);
   } catch (error) {
@@ -75,8 +73,7 @@ async function lsProjectsAction(options: LsProjectsOptions): Promise<void> {
     }
 
     const columns = ['subdomain', 'name'];
-    const output = Bmg(projects).project(columns).toText();
-    console.log(output);
+    printTable(projects, columns);
 
     console.log(`\nShowing ${projects.length} project(s)`);
   } catch (error) {
@@ -105,8 +102,7 @@ async function lsBoardsAction(options: LsBoardsOptions): Promise<void> {
     }
 
     const columns = ['location', 'label'];
-    const output = Bmg(boards).project(columns).toText();
-    console.log(output);
+    printTable(boards, columns);
 
     console.log(`\nShowing ${boards.length} board(s)`);
   } catch (error) {
