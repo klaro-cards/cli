@@ -8,6 +8,32 @@ import { formatStoryMarkdown } from '../utils/story-markdown.js';
 interface ReadOptions {
   board?: string;
   project?: string;
+  show?: string;
+  raw?: boolean;
+}
+
+/**
+ * Render markdown with optional highlighting.
+ * Frontmatter is preserved as-is (not rendered as markdown).
+ */
+function renderOutput(markdown: string, raw: boolean): string {
+  if (raw) {
+    return markdown;
+  }
+
+  // Extract frontmatter to avoid it being rendered as markdown
+  let frontmatter = '';
+  let content = markdown;
+
+  if (markdown.startsWith('---')) {
+    const endIndex = markdown.indexOf('---', 3);
+    if (endIndex !== -1) {
+      frontmatter = markdown.slice(0, endIndex + 3) + '\n\n';
+      content = markdown.slice(endIndex + 3).trim();
+    }
+  }
+
+  return frontmatter + renderMarkdown(content);
 }
 
 async function readAction(identifiers: string[], options: ReadOptions): Promise<void> {
@@ -39,9 +65,13 @@ async function readAction(identifiers: string[], options: ReadOptions): Promise<
       return;
     }
 
-    // Output each story as markdown with terminal highlighting
-    const markdown = stories.map(formatStoryMarkdown).join('\n\n---\n\n');
-    const output = renderMarkdown(markdown);
+    // Output each story as markdown
+    const dimensions = options.show?.split(',').map(d => d.trim());
+    const parts = stories.map(s => {
+      const md = formatStoryMarkdown(s, dimensions);
+      return renderOutput(md, options.raw ?? false);
+    });
+    const output = parts.join('\n---\n\n');
     process.stdout.write(output);
   } catch (error) {
     if (error instanceof KlaroApiError) {
@@ -61,5 +91,7 @@ export function createReadCommand(): Command {
     .argument('<identifiers...>', 'Card identifier(s) to read')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
     .option('-p, --project <subdomain>', 'Project subdomain')
+    .option('--show <dimensions>', 'Include dimensions in YAML frontmatter (comma-separated)')
+    .option('--raw', 'Output raw markdown without highlighting')
     .action(readAction);
 }

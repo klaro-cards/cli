@@ -8,6 +8,7 @@ import { openInEditor } from '../utils/editor.js';
 interface EditOptions {
   board?: string;
   project?: string;
+  show?: string;
 }
 
 async function editAction(identifier: string, options: EditOptions): Promise<void> {
@@ -34,9 +35,10 @@ async function editAction(identifier: string, options: EditOptions): Promise<voi
     }
 
     const story = stories[0];
+    const dimensions = options.show?.split(',').map(d => d.trim());
 
     // Format as markdown and open in editor
-    const markdown = formatStoryMarkdown(story);
+    const markdown = formatStoryMarkdown(story, dimensions);
     const edited = openInEditor(markdown, `card-${identifier}.md`);
 
     if (edited === null) {
@@ -70,6 +72,7 @@ async function editAction(identifier: string, options: EditOptions): Promise<voi
       identifier: numericId,
       title: parsed.title,
       specification: parsed.specification ?? '',
+      ...parsed.dimensions,
     }];
 
     await api.updateStories(board, updates);
@@ -92,5 +95,6 @@ export function createEditCommand(): Command {
     .argument('<identifier>', 'Card identifier to edit')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
     .option('-p, --project <subdomain>', 'Project subdomain')
+    .option('--show <dimensions>', 'Include dimensions in YAML frontmatter (comma-separated)')
     .action(editAction);
 }

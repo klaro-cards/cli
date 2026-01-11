@@ -32,7 +32,8 @@
     "@enspirit/bmg-js": "^1.1.1",
     "commander": "^12.1.0",
     "marked": "^15.0.12",
-    "marked-terminal": "^7.3.0"
+    "marked-terminal": "^7.3.0",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@types/marked-terminal": "^6.1.1",
