@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
@@ -28,6 +29,10 @@ async function lsCardsAction(options: LsCardsOptions, command: Command): Promise
 
     if (stories.length === 0) {
       console.log(`No cards found in board ${board}.`);
+      const dimExample = dims
+        ? ' ' + dims.split(',').map(d => `${d.trim()}=value`).join(' ')
+        : '';
+      console.log(chalk.cyan(`\n💡 Hint: klaro create "My first card"${dimExample}`));
       return;
     }
 

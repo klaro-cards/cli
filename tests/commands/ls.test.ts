@@ -108,6 +108,23 @@ describe('ls command', () => {
     await cmd.parseAsync(['node', 'test', '-b', 'emptyboard']);
 
     expect(consoleSpy).toHaveBeenCalledWith('No cards found in board emptyboard.');
+    expect(consoleSpy).toHaveBeenCalledWith('\n💡 Hint: klaro create "My first card"');
+  });
+
+  it('should include dims in create example when configured', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('emptyboard');
+    mockResolveDims.mockReturnValue('status,priority');
+
+    const mockListStories = vi.fn().mockResolvedValue([]);
+    mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
+
+    const cmd = createLsCommand();
+    await cmd.parseAsync(['node', 'test', '-b', 'emptyboard']);
+
+    expect(consoleSpy).toHaveBeenCalledWith('No cards found in board emptyboard.');
+    expect(consoleSpy).toHaveBeenCalledWith('\n💡 Hint: klaro create "My first card" status=value priority=value');
   });
 
   it('should handle API errors', async () => {
