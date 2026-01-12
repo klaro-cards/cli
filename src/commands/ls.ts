@@ -1,38 +1,25 @@
 import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard, resolveShow } from '../lib/defaults.js';
+import { resolveBoard, resolveDims } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
 import { formatDimensionValues } from '../utils/format.js';
 import { printTable } from '../utils/table.js';
 
 interface LsCardsOptions {
   board?: string;
-  project?: string;
   limit?: string;
-  show?: string;
+  dims?: string;
   filter?: string[];
-}
-
-interface LsProjectsOptions {
-  project?: string;
-}
-
-interface LsBoardsOptions {
-  project?: string;
-}
-
-interface LsDimensionsOptions {
-  project?: string;
 }
 
 async function lsCardsAction(options: LsCardsOptions, command: Command): Promise<void> {
   try {
     const globalOpts = command.optsWithGlobals();
-    const project = requireProject(options.project);
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
-    const show = resolveShow(globalOpts.show ?? options.show, project);
+    const dims = resolveDims(globalOpts.dims ?? options.dims, project);
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
     const filters = parseDimensions(options.filter);
 
@@ -44,10 +31,10 @@ async function lsCardsAction(options: LsCardsOptions, command: Command): Promise
       return;
     }
 
-    // Default columns plus any user-specified show columns
+    // Default columns plus any user-specified dims columns
     const columns = ['identifier', 'title'];
-    if (show) {
-      columns.push(...show.split(',').map(d => d.trim()));
+    if (dims) {
+      columns.push(...dims.split(',').map(d => d.trim()));
     }
 
     printTable(stories, columns);
@@ -65,9 +52,10 @@ async function lsCardsAction(options: LsCardsOptions, command: Command): Promise
   }
 }
 
-async function lsProjectsAction(options: LsProjectsOptions): Promise<void> {
+async function lsProjectsAction(_options: unknown, command: Command): Promise<void> {
   try {
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
 
     const api = createClient(project, token);
@@ -94,9 +82,10 @@ async function lsProjectsAction(options: LsProjectsOptions): Promise<void> {
   }
 }
 
-async function lsBoardsAction(options: LsBoardsOptions): Promise<void> {
+async function lsBoardsAction(_options: unknown, command: Command): Promise<void> {
   try {
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
 
     const api = createClient(project, token);
@@ -125,9 +114,10 @@ async function lsBoardsAction(options: LsBoardsOptions): Promise<void> {
 
 const HIDDEN_DIMENSIONS = ['identifier', 'title', 'specification'];
 
-async function lsDimensionsAction(options: LsDimensionsOptions): Promise<void> {
+async function lsDimensionsAction(_options: unknown, command: Command): Promise<void> {
   try {
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
 
     const api = createClient(project, token);
@@ -165,9 +155,8 @@ function createCardsSubcommand(isDefault = false): Command {
   const cmd = new Command('cards')
     .description('List cards in a board' + (isDefault ? ' (default)' : ''))
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
     .option('-l, --limit <number>', 'Maximum number of cards to show', '20')
-    .option('--show <columns>', 'Additional columns to show (comma-separated)')
+    .option('--dims <columns>', 'Dimensions to include (comma-separated)')
     .option('-f, --filter <key=value>', 'Filter cards (can be used multiple times)',
       (value, previous: string[]) => previous.concat([value]), [])
     .action(lsCardsAction);
@@ -177,21 +166,18 @@ function createCardsSubcommand(isDefault = false): Command {
 function createProjectsSubcommand(): Command {
   return new Command('projects')
     .description('List projects')
-    .option('-p, --project <subdomain>', 'Project subdomain')
     .action(lsProjectsAction);
 }
 
 function createBoardsSubcommand(): Command {
   return new Command('boards')
     .description('List boards')
-    .option('-p, --project <subdomain>', 'Project subdomain')
     .action(lsBoardsAction);
 }
 
 function createDimensionsSubcommand(): Command {
   return new Command('dimensions')
     .description('List dimensions')
-    .option('-p, --project <subdomain>', 'Project subdomain')
     .action(lsDimensionsAction);
 }
 

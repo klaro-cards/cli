@@ -5,10 +5,9 @@ import { resolveBoard } from '../lib/defaults.js';
 
 interface DelOptions {
   board?: string;
-  project?: string;
 }
 
-async function delAction(identifiers: string[], options: DelOptions): Promise<void> {
+async function delAction(identifiers: string[], options: DelOptions, command: Command): Promise<void> {
   try {
     if (identifiers.length === 0) {
       console.error('Error: At least one identifier is required');
@@ -24,9 +23,10 @@ async function delAction(identifiers: string[], options: DelOptions): Promise<vo
       return num;
     });
 
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
-    const board = resolveBoard(options.board, project);
+    const board = resolveBoard(globalOpts.board ?? options.board, project);
 
     const api = createClient(project, token);
     await api.deleteStories(board, numericIds);
@@ -51,6 +51,5 @@ export function createDelCommand(): Command {
     .description('Delete one or more cards by identifier')
     .argument('<identifiers...>', 'Card identifier(s) to delete')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
     .action(delAction);
 }

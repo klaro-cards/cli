@@ -4,10 +4,6 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 
-interface InitOptions {
-  project?: string;
-}
-
 async function prompt(question: string): Promise<string> {
   const rl = createInterface({
     input: process.stdin,
@@ -52,9 +48,10 @@ function getGlobalConfigDir(): string {
   return join(home, '.klaro');
 }
 
-async function initAction(folder: string | undefined, options: InitOptions): Promise<void> {
+async function initAction(folder: string | undefined, _options: unknown, command: Command): Promise<void> {
   try {
-    const project = options.project;
+    const globalOpts = command.optsWithGlobals();
+    const project = globalOpts.project;
 
     if (folder) {
       // klaro init . or klaro init FOLDER
@@ -132,6 +129,5 @@ export function createInitCommand(): Command {
   return new Command('init')
     .description('Initialize Klaro configuration')
     .argument('[folder]', 'Directory to initialize (default: interactive)')
-    .option('-p, --project <subdomain>', 'Set the project subdomain')
     .action(initAction);
 }

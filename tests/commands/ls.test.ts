@@ -20,20 +20,21 @@ vi.mock('../../src/lib/api.js', () => ({
 
 vi.mock('../../src/lib/defaults.js', () => ({
   resolveBoard: vi.fn(),
-  resolveShow: vi.fn(),
+  resolveDims: vi.fn(),
 }));
 
 import { requireProject, requireToken } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
-import { resolveBoard, resolveShow } from '../../src/lib/defaults.js';
+import { resolveBoard, resolveDims } from '../../src/lib/defaults.js';
 import { createLsCommand } from '../../src/commands/ls.js';
+import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('ls command', () => {
   const mockRequireProject = vi.mocked(requireProject);
   const mockRequireToken = vi.mocked(requireToken);
   const mockCreateClient = vi.mocked(createClient);
   const mockResolveBoard = vi.mocked(resolveBoard);
-  const mockResolveShow = vi.mocked(resolveShow);
+  const mockResolveDims = vi.mocked(resolveDims);
   const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
@@ -46,7 +47,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([
       { id: 1, identifier: 'CARD-1', title: 'First card' },
@@ -64,17 +65,17 @@ describe('ls command', () => {
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('First card'));
   });
 
-  it('should use custom project from option', async () => {
+  it('should use custom project from global option', async () => {
     mockRequireProject.mockReturnValue('custom-project');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([]);
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
-    const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '-p', 'custom-project']);
+    const cmd = wrapWithGlobalOptions(createLsCommand());
+    await cmd.parseAsync(['node', 'test', '-p', 'custom-project', '-b', 'backlog']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
   });
@@ -83,7 +84,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([]);
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
@@ -98,7 +99,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('emptyboard');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([]);
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
@@ -113,7 +114,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('nonexistent');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockRejectedValue(new KlaroApiError(404, 'Board not found'));
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
@@ -129,7 +130,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
-    mockResolveShow.mockReturnValue('progress,assignee');
+    mockResolveDims.mockReturnValue('progress,assignee');
 
     const mockListStories = vi.fn().mockResolvedValue([
       { id: 1, identifier: 'CARD-1', title: 'First card', progress: 'todo', assignee: 'Alice' },
@@ -138,7 +139,7 @@ describe('ls command', () => {
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
 
     const cmd = createLsCommand();
-    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '--show', 'progress,assignee']);
+    await cmd.parseAsync(['node', 'test', '-b', 'backlog', '--dims', 'progress,assignee']);
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('progress'));
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('assignee'));
@@ -150,7 +151,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([]);
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
@@ -168,7 +169,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([
       { id: 1, identifier: 'CARD-1', title: 'First card', createdAt: '2024-01-01', progress: 'todo' },
@@ -191,7 +192,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('all');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([]);
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
@@ -207,7 +208,7 @@ describe('ls command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('sprint-1');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockListStories = vi.fn().mockResolvedValue([]);
     mockCreateClient.mockReturnValue({ listStories: mockListStories } as any);
@@ -291,7 +292,7 @@ describe('ls command', () => {
       mockRequireProject.mockReturnValue('myproject');
       mockRequireToken.mockReturnValue('token123');
       mockResolveBoard.mockReturnValue('backlog');
-      mockResolveShow.mockReturnValue(undefined);
+      mockResolveDims.mockReturnValue(undefined);
 
       const mockListStories = vi.fn().mockResolvedValue([
         { id: 1, identifier: 'CARD-1', title: 'First card' },

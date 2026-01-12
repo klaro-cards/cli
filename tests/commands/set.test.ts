@@ -26,6 +26,7 @@ import { requireProject, requireToken } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard } from '../../src/lib/defaults.js';
 import { createSetCommand } from '../../src/commands/set.js';
+import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('set command', () => {
   const mockRequireProject = vi.mocked(requireProject);
@@ -51,7 +52,7 @@ describe('set command', () => {
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
     const cmd = createSetCommand();
-    await cmd.parseAsync(['node', 'test', '12', '-d', 'assignee=Claude', '-b', 'backlog']);
+    await cmd.parseAsync(['node', 'test', '12', 'assignee=Claude', '-b', 'backlog']);
 
     expect(mockResolveBoard).toHaveBeenCalledWith('backlog', 'myproject');
     expect(mockUpdateStories).toHaveBeenCalledWith('backlog', [{ identifier: 12, assignee: 'Claude' }]);
@@ -71,7 +72,7 @@ describe('set command', () => {
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
     const cmd = createSetCommand();
-    await cmd.parseAsync(['node', 'test', '12', '89', '-d', 'assignee=Claude', '-b', 'backlog']);
+    await cmd.parseAsync(['node', 'test', '12', '89', 'assignee=Claude', '-b', 'backlog']);
 
     expect(mockUpdateStories).toHaveBeenCalledWith('backlog', [
       { identifier: 12, assignee: 'Claude' },
@@ -92,7 +93,7 @@ describe('set command', () => {
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
     const cmd = createSetCommand();
-    await cmd.parseAsync(['node', 'test', '12', '-d', 'assignee=Claude', '-d', 'progress=done', '-b', 'backlog']);
+    await cmd.parseAsync(['node', 'test', '12', 'assignee=Claude', 'progress=done', '-b', 'backlog']);
 
     expect(mockUpdateStories).toHaveBeenCalledWith('backlog', [
       { identifier: 12, assignee: 'Claude', progress: 'done' },
@@ -110,13 +111,13 @@ describe('set command', () => {
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
     const cmd = createSetCommand();
-    await cmd.parseAsync(['node', 'test', '12', '-d', 'assignee=Claude']);
+    await cmd.parseAsync(['node', 'test', '12', 'assignee=Claude']);
 
     expect(mockResolveBoard).toHaveBeenCalledWith(undefined, 'myproject');
     expect(mockUpdateStories).toHaveBeenCalledWith('all', [{ identifier: 12, assignee: 'Claude' }]);
   });
 
-  it('should use custom project from option', async () => {
+  it('should use custom project from global option', async () => {
     mockRequireProject.mockReturnValue('custom-project');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
@@ -126,8 +127,8 @@ describe('set command', () => {
     ]);
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
-    const cmd = createSetCommand();
-    await cmd.parseAsync(['node', 'test', '12', '-d', 'assignee=Claude', '-p', 'custom-project']);
+    const cmd = wrapWithGlobalOptions(createSetCommand());
+    await cmd.parseAsync(['node', 'test', '-p', 'custom-project', '12', 'assignee=Claude']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
   });
@@ -140,13 +141,13 @@ describe('set command', () => {
     const cmd = createSetCommand();
     await cmd.parseAsync(['node', 'test', '12', '-b', 'backlog']);
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Error: At least one dimension is required');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error: At least one dimension is required (key=value)');
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
   it('should error for invalid identifier', async () => {
     const cmd = createSetCommand();
-    await cmd.parseAsync(['node', 'test', 'abc', '-d', 'assignee=Claude']);
+    await cmd.parseAsync(['node', 'test', 'abc', 'assignee=Claude']);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Invalid identifier "abc": must be a number');
     expect(exitSpy).toHaveBeenCalledWith(1);
@@ -161,7 +162,7 @@ describe('set command', () => {
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
     const cmd = createSetCommand();
-    await cmd.parseAsync(['node', 'test', '999', '-d', 'assignee=Claude', '-b', 'backlog']);
+    await cmd.parseAsync(['node', 'test', '999', 'assignee=Claude', '-b', 'backlog']);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Card not found');
     expect(exitSpy).toHaveBeenCalledWith(1);

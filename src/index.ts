@@ -27,9 +27,10 @@ program
   .description('Command-line interface for Klaro Cards')
   .version('0.1.0')
   .option('--trace', 'Enable API request/response tracing')
-  .option('--show <dimensions>', 'Dimensions to display (comma-separated)')
+  .option('-p, --project <subdomain>', 'Project subdomain')
+  .option('--dims <dimensions>', 'Dimensions to include (comma-separated)')
   .option('--board <board>', 'Board identifier')
-  .option('--save-defaults', 'Save --show and --board as project defaults')
+  .option('--save-defaults', 'Save --dims and --board as project defaults')
   .hook('preAction', (thisCommand) => {
     const opts = thisCommand.optsWithGlobals();
     if (opts.trace) {
@@ -38,8 +39,8 @@ program
     if (opts.saveDefaults) {
       const project = getProject();
       if (project) {
-        if (opts.show) {
-          setProjectDefault(project, 'show', opts.show);
+        if (opts.dims) {
+          setProjectDefault(project, 'dims', opts.dims);
         }
         if (opts.board) {
           setProjectDefault(project, 'board', opts.board);

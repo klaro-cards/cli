@@ -2,17 +2,15 @@ import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard, resolveShow } from '../lib/defaults.js';
-import { parseDimensions } from '../utils/dimensions.js';
+import { resolveBoard, resolveDims } from '../lib/defaults.js';
+import { splitArgs, parseDimensions } from '../utils/dimensions.js';
 import { editStoryInEditor } from '../utils/story-editor.js';
 import { printTable } from '../utils/table.js';
 import { parseStoryMarkdown } from '../utils/story-markdown.js';
 
 interface CreateOptions {
   board?: string;
-  project?: string;
-  dimension?: string[];
-  show?: string;
+  dims?: string;
   edit?: boolean;
 }
 
@@ -28,17 +26,21 @@ function readFromFile(path: string): string {
   return readFileSync(path, 'utf-8');
 }
 
-async function createAction(titleOrFile: string | undefined, options: CreateOptions, command: Command): Promise<void> {
+async function createAction(args: string[], options: CreateOptions, command: Command): Promise<void> {
   try {
     const globalOpts = command.optsWithGlobals();
-    const project = requireProject(options.project);
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
+
+    // Split args into title/file and key=value dimensions
+    const { regularArgs, dimensionArgs } = splitArgs(args);
+    const titleOrFile = regularArgs[0];
+    const cliDimensions = parseDimensions(dimensionArgs);
 
     let title: string;
     let specification: string | undefined;
     let fileDimensions: Record<string, unknown> = {};
-    const cliDimensions = parseDimensions(options.dimension);
 
     if (!titleOrFile) {
       // No argument - read from stdin
@@ -81,8 +83,8 @@ async function createAction(titleOrFile: string | undefined, options: CreateOpti
 
     // If --edit flag is set, open the card in editor immediately
     if (options.edit) {
-      const showOpt = resolveShow(globalOpts.show ?? options.show, project);
-      const dimensions = showOpt?.split(',').map((d: string) => d.trim());
+      const dimsOpt = resolveDims(globalOpts.dims ?? options.dims, project);
+      const dimensions = dimsOpt?.split(',').map((d: string) => d.trim());
       const result = editStoryInEditor(story, dimensions);
 
       if (result.error) {
@@ -100,9 +102,9 @@ async function createAction(titleOrFile: string | undefined, options: CreateOpti
       }
     } else {
       // Display created card in table format (like ls does)
-      const showOpt = resolveShow(globalOpts.show ?? options.show, project);
-      const showDimensions = showOpt?.split(',').map((d: string) => d.trim()) ?? [];
-      const columns = ['identifier', 'title', ...showDimensions];
+      const dimsOpt = resolveDims(globalOpts.dims ?? options.dims, project);
+      const dimColumns = dimsOpt?.split(',').map((d: string) => d.trim()) ?? [];
+      const columns = ['identifier', 'title', ...dimColumns];
       printTable([story], columns);
     }
   } catch (error) {
@@ -120,12 +122,9 @@ async function createAction(titleOrFile: string | undefined, options: CreateOpti
 export function createCreateCommand(): Command {
   return new Command('create')
     .description('Create a new card in a board')
-    .argument('[title]', 'Card title, or @file.md to read from file, or pipe from stdin')
+    .argument('[args...]', 'Card title (or @file.md), followed by optional key=value dimensions')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
-    .option('-d, --dimension <key=value>', 'Set a dimension value (can be used multiple times)',
-      (value, previous: string[]) => previous.concat([value]), [])
-    .option('--show <dimensions>', 'Dimensions to display in output (comma-separated)')
+    .option('--dims <dimensions>', 'Dimensions to include (comma-separated)')
     .option('-e, --edit', 'Open the card in editor immediately after creation')
     .action(createAction);
 }

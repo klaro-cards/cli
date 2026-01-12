@@ -2,24 +2,25 @@ import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard } from '../lib/defaults.js';
-import { parseDimensions } from '../utils/dimensions.js';
+import { splitArgs, parseDimensions } from '../utils/dimensions.js';
 import { printTable } from '../utils/table.js';
 
 interface SetOptions {
   board?: string;
-  project?: string;
-  dimension?: string[];
 }
 
-async function setAction(identifiers: string[], options: SetOptions): Promise<void> {
+async function setAction(args: string[], options: SetOptions, command: Command): Promise<void> {
   try {
-    if (identifiers.length === 0) {
+    // Split args into identifiers and key=value dimensions
+    const { regularArgs, dimensionArgs } = splitArgs(args);
+
+    if (regularArgs.length === 0) {
       console.error('Error: At least one identifier is required');
       process.exit(1);
       return;
     }
 
-    const numericIds = identifiers.map(id => {
+    const numericIds = regularArgs.map(id => {
       const num = parseInt(id, 10);
       if (isNaN(num)) {
         throw new Error(`Invalid identifier "${id}": must be a number`);
@@ -27,16 +28,17 @@ async function setAction(identifiers: string[], options: SetOptions): Promise<vo
       return num;
     });
 
-    const dimensions = parseDimensions(options.dimension);
+    const dimensions = parseDimensions(dimensionArgs);
     if (Object.keys(dimensions).length === 0) {
-      console.error('Error: At least one dimension is required');
+      console.error('Error: At least one dimension is required (key=value)');
       process.exit(1);
       return;
     }
 
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
-    const board = resolveBoard(options.board, project);
+    const board = resolveBoard(globalOpts.board ?? options.board, project);
 
     const api = createClient(project, token);
     const updates = numericIds.map(identifier => ({ identifier, ...dimensions }));
@@ -61,10 +63,7 @@ async function setAction(identifiers: string[], options: SetOptions): Promise<vo
 export function createSetCommand(): Command {
   return new Command('set')
     .description('Update one or more cards by identifier')
-    .argument('<identifiers...>', 'Card identifier(s) to update')
+    .argument('<args...>', 'Card identifier(s) followed by key=value dimension(s)')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
-    .option('-d, --dimension <key=value>', 'Set a dimension value (can be used multiple times)',
-      (value, previous: string[]) => previous.concat([value]), [])
     .action(setAction);
 }

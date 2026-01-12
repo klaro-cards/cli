@@ -8,20 +8,18 @@ import {
 } from '../lib/defaults.js';
 import type { ProjectDefaults } from '../lib/types.js';
 
-interface ConfigOptions {
-  project?: string;
-}
-
 function setAction(
   key: string,
   value: string,
-  options: ConfigOptions
+  _options: unknown,
+  command: Command
 ): void {
   try {
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
 
     if (!isValidKey(key)) {
-      console.error(`Error: Unknown option "${key}". Valid options: board, show`);
+      console.error(`Error: Unknown option "${key}". Valid options: board, dims`);
       process.exit(1);
       return;
     }
@@ -34,12 +32,13 @@ function setAction(
   }
 }
 
-function unsetAction(key: string, options: ConfigOptions): void {
+function unsetAction(key: string, _options: unknown, command: Command): void {
   try {
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
 
     if (!isValidKey(key)) {
-      console.error(`Error: Unknown option "${key}". Valid options: board, show`);
+      console.error(`Error: Unknown option "${key}". Valid options: board, dims`);
       process.exit(1);
       return;
     }
@@ -52,9 +51,10 @@ function unsetAction(key: string, options: ConfigOptions): void {
   }
 }
 
-function listAction(options: ConfigOptions): void {
+function listAction(_options: unknown, command: Command): void {
   try {
-    const project = requireProject(options.project);
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
     const defaults = listProjectDefaults(project);
     const projectDefaults = getProjectDefaults(project);
 
@@ -73,7 +73,7 @@ function listAction(options: ConfigOptions): void {
 }
 
 function isValidKey(key: string): key is keyof ProjectDefaults {
-  return key === 'board' || key === 'show';
+  return key === 'board' || key === 'dims';
 }
 
 export function createConfigCommand(): Command {
@@ -83,24 +83,21 @@ export function createConfigCommand(): Command {
   cmd.addCommand(
     new Command('set')
       .description('Set a default option value for the current project')
-      .argument('<key>', 'Option name (e.g., board)')
+      .argument('<key>', 'Option name (board or dims)')
       .argument('<value>', 'Default value')
-      .option('-p, --project <subdomain>', 'Project subdomain')
       .action(setAction)
   );
 
   cmd.addCommand(
     new Command('unset')
       .description('Remove a default option value for the current project')
-      .argument('<key>', 'Option name to remove')
-      .option('-p, --project <subdomain>', 'Project subdomain')
+      .argument('<key>', 'Option name to remove (board or dims)')
       .action(unsetAction)
   );
 
   cmd.addCommand(
     new Command('list')
       .description('List all default option values for the current project')
-      .option('-p, --project <subdomain>', 'Project subdomain')
       .action(listAction)
   );
 

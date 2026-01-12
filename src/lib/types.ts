@@ -1,6 +1,6 @@
 export interface ProjectDefaults {
   board?: string;
-  show?: string;
+  dims?: string;
 }
 
 export interface Secrets {

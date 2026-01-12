@@ -26,6 +26,7 @@ import { requireProject, requireToken } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard } from '../../src/lib/defaults.js';
 import { createDelCommand } from '../../src/commands/del.js';
+import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('del command', () => {
   const mockRequireProject = vi.mocked(requireProject);
@@ -86,7 +87,7 @@ describe('del command', () => {
     expect(mockDeleteStories).toHaveBeenCalledWith('all', [12]);
   });
 
-  it('should use custom project from option', async () => {
+  it('should use custom project from global option', async () => {
     mockRequireProject.mockReturnValue('custom-project');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
@@ -94,8 +95,8 @@ describe('del command', () => {
     const mockDeleteStories = vi.fn().mockResolvedValue(undefined);
     mockCreateClient.mockReturnValue({ deleteStories: mockDeleteStories } as any);
 
-    const cmd = createDelCommand();
-    await cmd.parseAsync(['node', 'test', '12', '-b', 'backlog', '-p', 'custom-project']);
+    const cmd = wrapWithGlobalOptions(createDelCommand());
+    await cmd.parseAsync(['node', 'test', '-p', 'custom-project', '12', '-b', 'backlog']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
   });

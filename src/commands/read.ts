@@ -1,14 +1,13 @@
 import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard, resolveShow } from '../lib/defaults.js';
+import { resolveBoard, resolveDims } from '../lib/defaults.js';
 import { renderMarkdownWithFrontmatter } from '../utils/markdown.js';
 import { formatStoryMarkdown } from '../utils/story-markdown.js';
 
 interface ReadOptions {
   board?: string;
-  project?: string;
-  show?: string;
+  dims?: string;
   raw?: boolean;
 }
 
@@ -29,7 +28,7 @@ async function readAction(identifiers: string[], options: ReadOptions, command: 
     });
 
     const globalOpts = command.optsWithGlobals();
-    const project = requireProject(options.project);
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
 
@@ -43,8 +42,8 @@ async function readAction(identifiers: string[], options: ReadOptions, command: 
     }
 
     // Output each story as markdown
-    const showOpt = resolveShow(globalOpts.show ?? options.show, project);
-    const dimensions = showOpt?.split(',').map((d: string) => d.trim());
+    const dimsOpt = resolveDims(globalOpts.dims ?? options.dims, project);
+    const dimensions = dimsOpt?.split(',').map((d: string) => d.trim());
     const parts = stories.map(s => {
       const md = formatStoryMarkdown(s, dimensions);
       return renderMarkdownWithFrontmatter(md, options.raw ?? false);
@@ -68,8 +67,7 @@ export function createReadCommand(): Command {
     .description('Read one or more cards and display as markdown')
     .argument('<identifiers...>', 'Card identifier(s) to read')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
-    .option('--show <dimensions>', 'Include dimensions in YAML frontmatter (comma-separated)')
+    .option('--dims <dimensions>', 'Dimensions to include (comma-separated)')
     .option('--raw', 'Output raw markdown without highlighting')
     .action(readAction);
 }

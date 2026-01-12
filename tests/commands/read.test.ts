@@ -20,7 +20,7 @@ vi.mock('../../src/lib/api.js', () => ({
 
 vi.mock('../../src/lib/defaults.js', () => ({
   resolveBoard: vi.fn(),
-  resolveShow: vi.fn(),
+  resolveDims: vi.fn(),
 }));
 
 vi.mock('../../src/utils/markdown.js', () => ({
@@ -33,6 +33,7 @@ import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard } from '../../src/lib/defaults.js';
 import { createReadCommand } from '../../src/commands/read.js';
 import { formatStoryMarkdown } from '../../src/utils/story-markdown.js';
+import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('formatStoryMarkdown', () => {
   it('should format story with title only', () => {
@@ -149,7 +150,7 @@ describe('read command', () => {
     expect(mockGetStories).toHaveBeenCalledWith('sprint', [12]);
   });
 
-  it('should use project from option', async () => {
+  it('should use project from global option', async () => {
     mockRequireProject.mockReturnValue('other-project');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('all');
@@ -159,8 +160,8 @@ describe('read command', () => {
     ]);
     mockCreateClient.mockReturnValue({ getStories: mockGetStories } as any);
 
-    const cmd = createReadCommand();
-    await cmd.parseAsync(['node', 'test', '12', '-p', 'other-project']);
+    const cmd = wrapWithGlobalOptions(createReadCommand());
+    await cmd.parseAsync(['node', 'test', '-p', 'other-project', '12']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('other-project');
   });

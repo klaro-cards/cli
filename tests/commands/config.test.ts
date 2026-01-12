@@ -19,6 +19,7 @@ import {
   getProjectDefaults,
 } from '../../src/lib/defaults.js';
 import { createConfigCommand } from '../../src/commands/config.js';
+import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('config command', () => {
   const mockRequireProject = vi.mocked(requireProject);
@@ -46,11 +47,21 @@ describe('config command', () => {
       expect(consoleSpy).toHaveBeenCalledWith('Set default board="backlog" for project "myproject"');
     });
 
-    it('should use custom project from option', async () => {
-      mockRequireProject.mockReturnValue('custom-project');
+    it('should set dims default for current project', async () => {
+      mockRequireProject.mockReturnValue('myproject');
 
       const cmd = createConfigCommand();
-      await cmd.parseAsync(['node', 'test', 'set', 'board', 'sprint', '-p', 'custom-project']);
+      await cmd.parseAsync(['node', 'test', 'set', 'dims', 'progress,assignee']);
+
+      expect(mockSetProjectDefault).toHaveBeenCalledWith('myproject', 'dims', 'progress,assignee');
+      expect(consoleSpy).toHaveBeenCalledWith('Set default dims="progress,assignee" for project "myproject"');
+    });
+
+    it('should use custom project from global option', async () => {
+      mockRequireProject.mockReturnValue('custom-project');
+
+      const cmd = wrapWithGlobalOptions(createConfigCommand());
+      await cmd.parseAsync(['node', 'test', '-p', 'custom-project', 'set', 'board', 'sprint']);
 
       expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
       expect(mockSetProjectDefault).toHaveBeenCalledWith('custom-project', 'board', 'sprint');
@@ -74,7 +85,7 @@ describe('config command', () => {
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'set', 'unknownkey', 'value']);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, show');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, dims');
       expect(exitSpy).toHaveBeenCalledWith(1);
       expect(mockSetProjectDefault).not.toHaveBeenCalled();
     });
@@ -90,6 +101,16 @@ describe('config command', () => {
       expect(mockRequireProject).toHaveBeenCalledWith(undefined);
       expect(mockUnsetProjectDefault).toHaveBeenCalledWith('myproject', 'board');
       expect(consoleSpy).toHaveBeenCalledWith('Removed default for "board" from project "myproject"');
+    });
+
+    it('should remove dims default for current project', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+
+      const cmd = createConfigCommand();
+      await cmd.parseAsync(['node', 'test', 'unset', 'dims']);
+
+      expect(mockUnsetProjectDefault).toHaveBeenCalledWith('myproject', 'dims');
+      expect(consoleSpy).toHaveBeenCalledWith('Removed default for "dims" from project "myproject"');
     });
 
     it('should error if no project is set', async () => {
@@ -110,7 +131,7 @@ describe('config command', () => {
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'unset', 'unknownkey']);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, show');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, dims');
       expect(exitSpy).toHaveBeenCalledWith(1);
       expect(mockUnsetProjectDefault).not.toHaveBeenCalled();
     });

@@ -2,13 +2,12 @@ import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import type { UpdateStoryInput } from '../lib/types.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard, resolveShow } from '../lib/defaults.js';
+import { resolveBoard, resolveDims } from '../lib/defaults.js';
 import { editStoryInEditor } from '../utils/story-editor.js';
 
 interface EditOptions {
   board?: string;
-  project?: string;
-  show?: string;
+  dims?: string;
 }
 
 interface UpdateResult {
@@ -35,7 +34,7 @@ async function editAction(identifiers: string[], options: EditOptions, command: 
     });
 
     const globalOpts = command.optsWithGlobals();
-    const project = requireProject(options.project);
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
 
@@ -53,8 +52,8 @@ async function editAction(identifiers: string[], options: EditOptions, command: 
     const storyMap = new Map(fetchedStories.map(s => [String(s.identifier), s]));
     const stories = numericIds.map(id => storyMap.get(String(id))).filter(s => s !== undefined);
 
-    const showOpt = resolveShow(globalOpts.show ?? options.show, project);
-    const dimensions = showOpt?.split(',').map((d: string) => d.trim());
+    const dimsOpt = resolveDims(globalOpts.dims ?? options.dims, project);
+    const dimensions = dimsOpt?.split(',').map((d: string) => d.trim());
 
     // Process each story sequentially
     const results: UpdateResult[] = [];
@@ -107,7 +106,6 @@ export function createEditCommand(): Command {
     .description('Edit one or more cards in your default editor')
     .argument('<identifiers...>', 'Card identifier(s) to edit')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
-    .option('--show <dimensions>', 'Include dimensions in YAML frontmatter (comma-separated)')
+    .option('--dims <dimensions>', 'Dimensions to include (comma-separated)')
     .action(editAction);
 }

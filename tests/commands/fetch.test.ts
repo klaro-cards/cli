@@ -21,7 +21,7 @@ vi.mock('../../src/lib/api.js', () => ({
 
 vi.mock('../../src/lib/defaults.js', () => ({
   resolveBoard: vi.fn(),
-  resolveShow: vi.fn(),
+  resolveDims: vi.fn(),
 }));
 
 vi.mock('node:fs', () => ({
@@ -33,7 +33,7 @@ vi.mock('node:fs', () => ({
 
 import { requireProject, requireToken, getConfigDir } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
-import { resolveBoard, resolveShow } from '../../src/lib/defaults.js';
+import { resolveBoard, resolveDims } from '../../src/lib/defaults.js';
 import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { createFetchCommand } from '../../src/commands/fetch.js';
 
@@ -43,7 +43,7 @@ describe('fetch command', () => {
   const mockGetConfigDir = vi.mocked(getConfigDir);
   const mockCreateClient = vi.mocked(createClient);
   const mockResolveBoard = vi.mocked(resolveBoard);
-  const mockResolveShow = vi.mocked(resolveShow);
+  const mockResolveDims = vi.mocked(resolveDims);
   const mockWriteFileSync = vi.mocked(writeFileSync);
   const mockExistsSync = vi.mocked(existsSync);
   const mockMkdirSync = vi.mocked(mkdirSync);
@@ -61,7 +61,7 @@ describe('fetch command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('all');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockGetStories = vi.fn().mockResolvedValue([
       { id: 1, identifier: '12', title: 'Test card', specification: 'Description', createdAt: '', updatedAt: '' },
@@ -88,7 +88,7 @@ describe('fetch command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockGetStories = vi.fn().mockResolvedValue([
       { id: 1, identifier: '12', title: 'First card', createdAt: '', updatedAt: '' },
@@ -108,7 +108,7 @@ describe('fetch command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('all');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
     mockExistsSync.mockReturnValue(true); // File exists
 
     const mockGetStories = vi.fn().mockResolvedValue([
@@ -128,7 +128,7 @@ describe('fetch command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('all');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
     mockExistsSync.mockReturnValue(true); // File exists
 
     const mockGetStories = vi.fn().mockResolvedValue([
@@ -146,7 +146,7 @@ describe('fetch command', () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('all');
-    mockResolveShow.mockReturnValue(undefined);
+    mockResolveDims.mockReturnValue(undefined);
 
     const mockGetStories = vi.fn().mockResolvedValue([
       { id: 1, identifier: '12', title: 'Test card', createdAt: '', updatedAt: '' },

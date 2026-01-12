@@ -10,7 +10,6 @@ import { getContentDir, listContentFiles, extractIdentifierFromFilename } from '
 
 interface SyncOptions {
   board?: string;
-  project?: string;
   keep?: boolean;
   dryRun?: boolean;
 }
@@ -26,7 +25,7 @@ interface SyncResult {
 async function syncAction(options: SyncOptions, command: Command): Promise<void> {
   try {
     const globalOpts = command.optsWithGlobals();
-    const project = requireProject(options.project);
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
 
@@ -178,7 +177,6 @@ export function createSyncCommand(): Command {
   return new Command('sync')
     .description('Upload local card changes and delete synced files')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
     .option('--keep', 'Keep local files after syncing')
     .option('--dry-run', 'Show what would be synced without making changes')
     .action(syncAction);

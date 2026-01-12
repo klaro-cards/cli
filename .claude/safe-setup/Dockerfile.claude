@@ -16,7 +16,7 @@ RUN addgroup -S claude && adduser -S claude -G claude \
     && echo "claude ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Install Claude Code CLI globally
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm i -g @anthropic-ai/claude-code
 
 # Create wrapper script 'c' that adds dangerous permissions flag
 RUN echo '#!/bin/bash' > /usr/local/bin/c && \

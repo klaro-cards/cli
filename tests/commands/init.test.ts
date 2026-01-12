@@ -21,6 +21,7 @@ vi.mock('node:readline', () => ({
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { createInitCommand } from '../../src/commands/init.js';
+import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('init command', () => {
   const mockExistsSync = vi.mocked(existsSync);
@@ -69,8 +70,8 @@ describe('init command', () => {
         return false;
       });
 
-      const cmd = createInitCommand();
-      await cmd.parseAsync(['node', 'test', '.', '-p', 'myproject']);
+      const cmd = wrapWithGlobalOptions(createInitCommand());
+      await cmd.parseAsync(['node', 'test', '-p', 'myproject', '.']);
 
       const expectedDir = join(process.cwd(), '.klaro');
       expect(mockWriteFileSync).toHaveBeenCalledWith(
@@ -130,7 +131,7 @@ describe('init command', () => {
       });
       mockReadFileSync.mockReturnValue('{}');
 
-      const cmd = createInitCommand();
+      const cmd = wrapWithGlobalOptions(createInitCommand());
       await cmd.parseAsync(['node', 'test', '-p', 'newproject']);
 
       expect(mockWriteFileSync).toHaveBeenCalledWith(

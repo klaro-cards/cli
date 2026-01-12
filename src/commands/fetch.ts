@@ -3,14 +3,13 @@ import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createClient, KlaroApiError } from '../lib/api.js';
 import { requireProject, requireToken } from '../lib/config.js';
-import { resolveBoard, resolveShow } from '../lib/defaults.js';
+import { resolveBoard, resolveDims } from '../lib/defaults.js';
 import { formatStoryMarkdown } from '../utils/story-markdown.js';
 import { ensureContentDir, buildContentFilename } from '../utils/content.js';
 
 interface FetchOptions {
   board?: string;
-  project?: string;
-  show?: string;
+  dims?: string;
   force?: boolean;
 }
 
@@ -40,7 +39,7 @@ async function fetchAction(identifiers: string[], options: FetchOptions, command
     });
 
     const globalOpts = command.optsWithGlobals();
-    const project = requireProject(options.project);
+    const project = requireProject(globalOpts.project);
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
 
@@ -57,9 +56,9 @@ async function fetchAction(identifiers: string[], options: FetchOptions, command
     // Ensure content directory exists
     const contentDir = ensureContentDir(project);
 
-    // Resolve show dimensions
-    const showOpt = resolveShow(globalOpts.show ?? options.show, project);
-    const dimensions = showOpt?.split(',').map((d: string) => d.trim());
+    // Resolve dimensions
+    const dimsOpt = resolveDims(globalOpts.dims ?? options.dims, project);
+    const dimensions = dimsOpt?.split(',').map((d: string) => d.trim());
 
     // Process each story
     const results: FetchResult[] = [];
@@ -148,8 +147,7 @@ export function createFetchCommand(): Command {
     .description('Download cards as markdown files for offline editing')
     .argument('<identifiers...>', 'Card identifier(s) to fetch')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .option('-p, --project <subdomain>', 'Project subdomain')
-    .option('--show <dimensions>', 'Include dimensions in YAML frontmatter (comma-separated)')
+    .option('--dims <dimensions>', 'Dimensions to include (comma-separated)')
     .option('--force', 'Overwrite existing files')
     .action(fetchAction);
 }

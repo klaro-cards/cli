@@ -20,7 +20,7 @@ vi.mock('../../src/lib/api.js', () => ({
 
 vi.mock('../../src/lib/defaults.js', () => ({
   resolveBoard: vi.fn(),
-  resolveShow: vi.fn(),
+  resolveDims: vi.fn(),
 }));
 
 vi.mock('../../src/utils/story-editor.js', () => ({
@@ -32,6 +32,7 @@ import { editStoryInEditor } from '../../src/utils/story-editor.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard } from '../../src/lib/defaults.js';
 import { createCreateCommand } from '../../src/commands/create.js';
+import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('create command', () => {
   const mockRequireProject = vi.mocked(requireProject);
@@ -90,9 +91,9 @@ describe('create command', () => {
     const cmd = createCreateCommand();
     await cmd.parseAsync([
       'node', 'test', 'New card',
+      'progress=todo',
+      'priority=high',
       '-b', 'backlog',
-      '-d', 'progress=todo',
-      '-d', 'priority=high',
     ]);
 
     expect(mockCreateStory).toHaveBeenCalledWith('backlog', {
@@ -102,7 +103,7 @@ describe('create command', () => {
     });
   });
 
-  it('should use custom project from option', async () => {
+  it('should use custom project from global option', async () => {
     mockRequireProject.mockReturnValue('custom-project');
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
@@ -114,8 +115,8 @@ describe('create command', () => {
     });
     mockCreateClient.mockReturnValue({ createStory: mockCreateStory } as any);
 
-    const cmd = createCreateCommand();
-    await cmd.parseAsync(['node', 'test', 'New card', '-b', 'backlog', '-p', 'custom-project']);
+    const cmd = wrapWithGlobalOptions(createCreateCommand());
+    await cmd.parseAsync(['node', 'test', '-p', 'custom-project', 'New card', '-b', 'backlog']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
   });
