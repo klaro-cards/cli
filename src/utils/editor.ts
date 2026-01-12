@@ -11,6 +11,8 @@ export function getEditor(): string {
   return process.env.VISUAL || process.env.EDITOR || 'vi';
 }
 
+const MAX_FILENAME_LENGTH = 100;
+
 /**
  * Open content in the user's editor and return the edited content.
  *
@@ -19,7 +21,11 @@ export function getEditor(): string {
  * @returns The edited content, or null if the editor exited with an error
  */
 export function openInEditor(content: string, filename = 'edit.md'): string | null {
-  const tempPath = join(tmpdir(), `klaro-${Date.now()}-${filename}`);
+  // Truncate filename to avoid ENAMETOOLONG errors
+  const safeName = filename.length > MAX_FILENAME_LENGTH
+    ? filename.slice(0, MAX_FILENAME_LENGTH - 3) + '.md'
+    : filename;
+  const tempPath = join(tmpdir(), `klaro-${Date.now()}-${safeName}`);
 
   try {
     // Write content to temp file
