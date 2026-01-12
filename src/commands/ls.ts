@@ -27,7 +27,7 @@ async function lsCardsAction(options: LsCardsOptions, command: Command): Promise
     const stories = await api.listStories(board, { limit, filters });
 
     if (stories.length === 0) {
-      console.log('No cards found.');
+      console.log(`No cards found in board ${board}.`);
       return;
     }
 

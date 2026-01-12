@@ -107,7 +107,7 @@ describe('ls command', () => {
     const cmd = createLsCommand();
     await cmd.parseAsync(['node', 'test', '-b', 'emptyboard']);
 
-    expect(consoleSpy).toHaveBeenCalledWith('No cards found.');
+    expect(consoleSpy).toHaveBeenCalledWith('No cards found in board emptyboard.');
   });
 
   it('should handle API errors', async () => {
