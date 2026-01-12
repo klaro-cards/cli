@@ -73,3 +73,14 @@ export interface Dimension {
   values?: Array<{ id: number | null; code: string; label?: string }>;
   [key: string]: unknown;
 }
+
+// Completion cache types
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+export interface CompletionCache {
+  projects?: CacheEntry<Array<{ subdomain: string; label: string }>>;
+  boards?: Record<string, CacheEntry<Array<{ identifier: string; label: string }>>>;
+}
