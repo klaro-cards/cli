@@ -5,11 +5,11 @@ import { resolveBoard } from '../lib/defaults.js';
 import { splitArgs, parseDimensions } from '../utils/dimensions.js';
 import { printTable } from '../utils/table.js';
 
-interface SetOptions {
+interface UpdateOptions {
   board?: string;
 }
 
-async function setAction(args: string[], options: SetOptions, command: Command): Promise<void> {
+async function updateAction(args: string[], options: UpdateOptions, command: Command): Promise<void> {
   try {
     // Split args into identifiers and key=value dimensions
     const { regularArgs, dimensionArgs } = splitArgs(args);
@@ -60,10 +60,18 @@ async function setAction(args: string[], options: SetOptions, command: Command):
   }
 }
 
-export function createSetCommand(): Command {
-  return new Command('set')
+export function createUpdateCommand(): Command {
+  return new Command('update')
     .description('Update one or more cards by identifier')
     .argument('<args...>', 'Card identifier(s) followed by key=value dimension(s)')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
-    .action(setAction);
+    .action(updateAction);
+}
+
+export function createUpdCommand(): Command {
+  return new Command('upd')
+    .description('Update one or more cards by identifier')
+    .argument('<args...>', 'Card identifier(s) followed by key=value dimension(s)')
+    .option('-b, --board <board>', 'Board identifier (default: "all")')
+    .action(updateAction);
 }

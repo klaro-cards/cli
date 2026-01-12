@@ -25,10 +25,10 @@ vi.mock('../../src/lib/defaults.js', () => ({
 import { requireProject, requireToken } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard } from '../../src/lib/defaults.js';
-import { createSetCommand } from '../../src/commands/set.js';
+import { createUpdateCommand } from '../../src/commands/update.js';
 import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
-describe('set command', () => {
+describe('update command', () => {
   const mockRequireProject = vi.mocked(requireProject);
   const mockRequireToken = vi.mocked(requireToken);
   const mockCreateClient = vi.mocked(createClient);
@@ -51,7 +51,7 @@ describe('set command', () => {
     ]);
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
-    const cmd = createSetCommand();
+    const cmd = createUpdateCommand();
     await cmd.parseAsync(['node', 'test', '12', 'assignee=Claude', '-b', 'backlog']);
 
     expect(mockResolveBoard).toHaveBeenCalledWith('backlog', 'myproject');
@@ -71,7 +71,7 @@ describe('set command', () => {
     ]);
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
-    const cmd = createSetCommand();
+    const cmd = createUpdateCommand();
     await cmd.parseAsync(['node', 'test', '12', '89', 'assignee=Claude', '-b', 'backlog']);
 
     expect(mockUpdateStories).toHaveBeenCalledWith('backlog', [
@@ -92,7 +92,7 @@ describe('set command', () => {
     ]);
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
-    const cmd = createSetCommand();
+    const cmd = createUpdateCommand();
     await cmd.parseAsync(['node', 'test', '12', 'assignee=Claude', 'progress=done', '-b', 'backlog']);
 
     expect(mockUpdateStories).toHaveBeenCalledWith('backlog', [
@@ -110,7 +110,7 @@ describe('set command', () => {
     ]);
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
-    const cmd = createSetCommand();
+    const cmd = createUpdateCommand();
     await cmd.parseAsync(['node', 'test', '12', 'assignee=Claude']);
 
     expect(mockResolveBoard).toHaveBeenCalledWith(undefined, 'myproject');
@@ -127,7 +127,7 @@ describe('set command', () => {
     ]);
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
-    const cmd = wrapWithGlobalOptions(createSetCommand());
+    const cmd = wrapWithGlobalOptions(createUpdateCommand());
     await cmd.parseAsync(['node', 'test', '-p', 'custom-project', '12', 'assignee=Claude']);
 
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
@@ -138,7 +138,7 @@ describe('set command', () => {
     mockRequireToken.mockReturnValue('token123');
     mockResolveBoard.mockReturnValue('backlog');
 
-    const cmd = createSetCommand();
+    const cmd = createUpdateCommand();
     await cmd.parseAsync(['node', 'test', '12', '-b', 'backlog']);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: At least one dimension is required (key=value)');
@@ -146,7 +146,7 @@ describe('set command', () => {
   });
 
   it('should error for invalid identifier', async () => {
-    const cmd = createSetCommand();
+    const cmd = createUpdateCommand();
     await cmd.parseAsync(['node', 'test', 'abc', 'assignee=Claude']);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Invalid identifier "abc": must be a number');
@@ -161,7 +161,7 @@ describe('set command', () => {
     const mockUpdateStories = vi.fn().mockRejectedValue(new KlaroApiError(404, 'Card not found'));
     mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
 
-    const cmd = createSetCommand();
+    const cmd = createUpdateCommand();
     await cmd.parseAsync(['node', 'test', '999', 'assignee=Claude', '-b', 'backlog']);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Card not found');
