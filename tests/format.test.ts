@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDimensionValues } from '../src/utils/format.js';
+import { formatDimensionValues, truncate } from '../src/utils/format.js';
 
 describe('formatDimensionValues', () => {
   it('returns empty string for undefined', () => {
@@ -64,5 +64,27 @@ describe('formatDimensionValues', () => {
       { id: 2, code: 'closed' },
     ];
     expect(formatDimensionValues(values)).toBe('1, 2');
+  });
+});
+
+describe('truncate', () => {
+  it('returns string unchanged if within limit', () => {
+    expect(truncate('hello', 10)).toBe('hello');
+  });
+
+  it('returns string unchanged if exactly at limit', () => {
+    expect(truncate('hello', 5)).toBe('hello');
+  });
+
+  it('truncates with ellipsis when over limit', () => {
+    expect(truncate('hello world', 8)).toBe('hello w…');
+  });
+
+  it('handles very short max length', () => {
+    expect(truncate('hello', 3)).toBe('hel');
+  });
+
+  it('handles empty string', () => {
+    expect(truncate('', 10)).toBe('');
   });
 });

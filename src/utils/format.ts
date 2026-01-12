@@ -1,4 +1,13 @@
 /**
+ * Truncate a string to a maximum length, adding ellipsis if truncated.
+ */
+export function truncate(str: string, maxLength: number): string {
+  if (maxLength < 4) return str.slice(0, maxLength);
+  if (str.length <= maxLength) return str;
+  return str.slice(0, maxLength - 1) + '…';
+}
+
+/**
  * Format dimension values for display.
  * Shows up to 6 IDs, with ellipsis if there are more.
  * Filters out null IDs.
