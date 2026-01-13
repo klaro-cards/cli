@@ -1,6 +1,9 @@
 import type { AuthToken, Story, CreateStoryInput, ListStoriesOptions, UpdateStoryInput, Project, Board, Dimension } from './types.js';
+import type { Connector } from './connector.js';
 import { trace } from './trace.js';
 import { getProject } from './config.js';
+
+export type { Connector } from './connector.js';
 
 const AUTH_API_URL = 'https://api.klaro.cards/v1';
 
@@ -73,7 +76,7 @@ async function doFetch<T>(
   return result;
 }
 
-export class KlaroApi {
+export class KlaroApi implements Connector {
   private subdomain: string;
   private baseUrl: string;
   private token?: string;
@@ -180,6 +183,6 @@ export class KlaroApi {
   }
 }
 
-export function createClient(subdomain: string, token?: string): KlaroApi {
+export function createClient(subdomain: string, token?: string): Connector {
   return new KlaroApi(subdomain, token);
 }
