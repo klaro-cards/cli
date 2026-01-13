@@ -68,8 +68,8 @@ export interface UpdateStoryInput {
 
 export interface Dimension {
   code: string;
-  name: string;
+  label?: string;
   datatype: string;
-  values?: Array<{ id: number | null; code: string; label?: string }>;
+  values?: Array<{ id: number | null; label?: string }>;
   [key: string]: unknown;
 }

@@ -12,11 +12,11 @@ export function truncate(str: string, maxLength: number): string {
  * Shows up to 6 IDs, with ellipsis if there are more.
  * Filters out null IDs.
  *
- * @param values - Array of dimension values with id, code, and optional label
+ * @param values - Array of dimension values with id and optional label
  * @returns Formatted string of IDs
  */
 export function formatDimensionValues(
-  values: Array<{ id: number | null; code: string; label?: string }> | undefined
+  values: Array<{ id: number | null; label?: string }> | undefined
 ): string {
   if (!values || values.length === 0) {
     return '';

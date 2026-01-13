@@ -16,6 +16,7 @@ import { createInitCommand } from './commands/init.js';
 import { createCheatsheetCommand } from './commands/cheatsheet.js';
 import { createFetchCommand } from './commands/fetch.js';
 import { createSyncCommand } from './commands/sync.js';
+import { createDescribeCommand } from './commands/describe.js';
 import { setTrace } from './lib/trace.js';
 import { getProject } from './lib/config.js';
 import { setProjectDefault } from './lib/defaults.js';
@@ -23,7 +24,7 @@ import { setProjectDefault } from './lib/defaults.js';
 // Command categories for help organization
 const COMMAND_CATEGORIES: Record<string, string[]> = {
   'Setup': ['init', 'login', 'logout', 'whoami', 'use', 'config'],
-  'Cards (and other objects)': ['ls', 'read', 'create', 'edit', 'update', 'del'],
+  'Cards (and other objects)': ['ls', 'read', 'create', 'edit', 'update', 'del', 'describe'],
   'Offline': ['fetch', 'sync'],
   'Help': ['cheatsheet', 'help'],
 };
@@ -173,5 +174,6 @@ program.addCommand(createInitCommand());
 program.addCommand(createCheatsheetCommand());
 program.addCommand(createFetchCommand());
 program.addCommand(createSyncCommand());
+program.addCommand(createDescribeCommand());
 
 program.parse();
