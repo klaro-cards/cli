@@ -34,6 +34,8 @@ export interface Board {
   id: number;
   identifier: string;
   label: string;
+  location?: string;
+  filters?: Record<string, string[]>;
   [key: string]: unknown;
 }
 

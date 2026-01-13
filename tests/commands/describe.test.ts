@@ -215,4 +215,79 @@ describe('describe command', () => {
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Dimension:'), 'state');
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Datatype:'), 'Progress');
   });
+
+  it('should work with explicit dimension subcommand', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+
+    const mockListDimensions = vi.fn().mockResolvedValue([
+      { code: 'status', label: 'Status', datatype: 'Nominal', values: [] },
+    ]);
+    mockCreateClient.mockReturnValue({ listDimensions: mockListDimensions } as any);
+
+    const cmd = createDescribeCommand();
+    await cmd.parseAsync(['node', 'test', 'dimension', 'status']);
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Dimension:'), 'Status');
+  });
+
+  describe('describe board', () => {
+    it('should display board details with filters', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockGetBoard = vi.fn().mockResolvedValue({
+        id: 1,
+        identifier: 'sprint-1',
+        label: 'Sprint 1',
+        location: 'sprint-1',
+        filters: {
+          status: ['in_progress', 'todo'],
+          assignee: ['Alice'],
+        },
+      });
+      mockCreateClient.mockReturnValue({ getBoard: mockGetBoard } as any);
+
+      const cmd = createDescribeCommand();
+      await cmd.parseAsync(['node', 'test', 'board', 'sprint-1']);
+
+      expect(mockGetBoard).toHaveBeenCalledWith('sprint-1');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Board:'), 'Sprint 1');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Location:'), 'sprint-1');
+    });
+
+    it('should display board without filters', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockGetBoard = vi.fn().mockResolvedValue({
+        id: 1,
+        identifier: 'all',
+        label: 'All Cards',
+        location: 'all',
+        filters: {},
+      });
+      mockCreateClient.mockReturnValue({ getBoard: mockGetBoard } as any);
+
+      const cmd = createDescribeCommand();
+      await cmd.parseAsync(['node', 'test', 'board', 'all']);
+
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Board:'), 'All Cards');
+      expect(consoleSpy).toHaveBeenCalledWith('\nNo filters configured');
+    });
+
+    it('should handle board not found', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockGetBoard = vi.fn().mockRejectedValue(new KlaroApiError(404, 'Board not found'));
+      mockCreateClient.mockReturnValue({ getBoard: mockGetBoard } as any);
+
+      const cmd = createDescribeCommand();
+      await cmd.parseAsync(['node', 'test', 'board', 'nonexistent']);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Board not found');
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
+  });
 });

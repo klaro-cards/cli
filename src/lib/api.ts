@@ -171,6 +171,10 @@ export class KlaroApi {
     return this.request<Board[]>('GET', '/my/boards/');
   }
 
+  async getBoard(boardId: string): Promise<Board> {
+    return this.request<Board>('GET', `/boards/${boardId}`);
+  }
+
   async listDimensions(): Promise<Dimension[]> {
     return this.request<Dimension[]>('GET', '/dimensions/');
   }
