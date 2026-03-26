@@ -10,6 +10,44 @@ npm install -g @klarocards/cli
 
 Requires Node.js 18.0.0 or higher.
 
+## Getting Started
+
+Login with your Klaro Cards credentials:
+
+```bash
+klaro login [--env]
+```
+
+Select the project you want to work with:
+
+```bash
+klaro ls projects          # see available projects
+klaro use my-project       # set the active project
+```
+
+Explore the project structure:
+
+```bash
+klaro ls boards            # list boards in the project
+klaro ls dimensions        # list available dimensions
+klaro describe board backlog       # see a board's filters
+klaro describe dimension status    # see a dimension's values
+```
+
+Start working with cards:
+
+```bash
+klaro ls                          # list cards (default board)
+klaro ls -b backlog               # list cards from a specific board
+klaro ls --dims status,assignee   # show specific dimensions
+klaro read 42                     # read a card's full content
+klaro create "My new card"        # create a card
+klaro update 42 status=done       # update a card's dimension
+klaro edit 42                     # edit a card in your $EDITOR
+```
+
+Run `klaro cheatsheet` for more examples, or `klaro <command> --help` for detailed usage.
+
 ## Usage
 
 ```
