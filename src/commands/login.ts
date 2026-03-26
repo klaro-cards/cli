@@ -51,9 +51,28 @@ async function prompt(question: string, hidden = false): Promise<string> {
   });
 }
 
-async function loginAction(): Promise<void> {
-  const email = await prompt('Email: ');
-  const password = await prompt('Password: ', true);
+export function credentialsFromEnv(): { email: string; password: string } {
+  const email = process.env.KLARO_LOGIN;
+  const password = process.env.KLARO_PASSWORD;
+
+  if (!email || !password) {
+    console.error('KLARO_LOGIN and KLARO_PASSWORD environment variables are required when using --env.');
+    process.exit(1);
+  }
+
+  return { email, password };
+}
+
+async function loginAction(options: { env?: boolean }): Promise<void> {
+  let email: string;
+  let password: string;
+
+  if (options.env) {
+    ({ email, password } = credentialsFromEnv());
+  } else {
+    email = await prompt('Email: ');
+    password = await prompt('Password: ', true);
+  }
 
   if (!email || !password) {
     console.error('Email and password are required.');
@@ -86,5 +105,6 @@ async function loginAction(): Promise<void> {
 export function createLoginCommand(): Command {
   return new Command('login')
     .description('Login to Klaro Cards')
+    .option('--env', 'Read credentials from KLARO_LOGIN and KLARO_PASSWORD environment variables')
     .action(loginAction);
 }
