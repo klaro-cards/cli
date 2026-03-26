@@ -7,6 +7,7 @@ It is designed to be AI-agent friendly, enabling seamless integration with
 tools like Claude Code for backlog, task and project management workflows.`;
 
 const TIPS = `- Use \`--raw\` with \`read\` to get plain markdown without highlighting
+- Use \`write\` instead of \`edit\` when scripting or running from an AI agent
 - Cards are identified by their numeric identifier (shown in ls output)
 - Most commands support \`-p <project>\` to override the active project
 
@@ -30,6 +31,8 @@ const EXAMPLES = Bmg([
   { category: 'Editing', example: 'klaro edit 1', explanation: 'Edit card in $EDITOR' },
   { category: 'Editing', example: 'klaro edit 1 2 3', explanation: 'Edit multiple cards sequentially' },
   { category: 'Editing', example: 'klaro edit 1 --dims progress', explanation: 'Include dimensions in editor' },
+  { category: 'Writing', example: 'klaro write 1 -f card.md', explanation: 'Update card from markdown file' },
+  { category: 'Writing', example: 'klaro read 1 --raw | klaro write 1', explanation: 'Pipe read output back after changes' },
   { category: 'Creating', example: 'klaro create "Card title"', explanation: 'Create new card with title' },
   { category: 'Creating', example: 'klaro create @card.md', explanation: 'Create from markdown file' },
   { category: 'Creating', example: 'cat card.md | klaro create', explanation: 'Create from stdin' },
