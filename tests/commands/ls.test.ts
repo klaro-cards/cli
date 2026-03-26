@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock modules
 vi.mock('../../src/lib/config.js', () => ({
+  getProjectOrDefault: vi.fn(),
   requireProject: vi.fn(),
   requireToken: vi.fn(),
 }));
@@ -23,13 +24,14 @@ vi.mock('../../src/lib/defaults.js', () => ({
   resolveDims: vi.fn(),
 }));
 
-import { requireProject, requireToken } from '../../src/lib/config.js';
+import { getProjectOrDefault, requireProject, requireToken } from '../../src/lib/config.js';
 import { createClient, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard, resolveDims } from '../../src/lib/defaults.js';
 import { createLsCommand } from '../../src/commands/ls.js';
 import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('ls command', () => {
+  const mockGetProjectOrDefault = vi.mocked(getProjectOrDefault);
   const mockRequireProject = vi.mocked(requireProject);
   const mockRequireToken = vi.mocked(requireToken);
   const mockCreateClient = vi.mocked(createClient);
@@ -238,7 +240,7 @@ describe('ls command', () => {
 
   describe('ls projects', () => {
     it('should list projects', async () => {
-      mockRequireProject.mockReturnValue('myproject');
+      mockGetProjectOrDefault.mockReturnValue('myproject');
       mockRequireToken.mockReturnValue('token123');
 
       const mockListProjects = vi.fn().mockResolvedValue([
@@ -257,7 +259,7 @@ describe('ls command', () => {
     });
 
     it('should show message when no projects found', async () => {
-      mockRequireProject.mockReturnValue('myproject');
+      mockGetProjectOrDefault.mockReturnValue('app');
       mockRequireToken.mockReturnValue('token123');
 
       const mockListProjects = vi.fn().mockResolvedValue([]);

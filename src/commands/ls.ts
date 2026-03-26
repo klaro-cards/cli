@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { createClient, KlaroApiError } from '../lib/api.js';
-import { requireProject, requireToken } from '../lib/config.js';
+import { getProjectOrDefault, requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard, resolveDims } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
 import { formatDimensionValues } from '../utils/format.js';
@@ -60,7 +60,7 @@ async function lsCardsAction(options: LsCardsOptions, command: Command): Promise
 async function lsProjectsAction(_options: unknown, command: Command): Promise<void> {
   try {
     const globalOpts = command.optsWithGlobals();
-    const project = requireProject(globalOpts.project);
+    const project = getProjectOrDefault(globalOpts.project);
     const token = requireToken();
 
     const api = createClient(project, token);

@@ -117,6 +117,10 @@ export function getToken(): string | undefined {
   return config.token;
 }
 
+export function getProjectOrDefault(cliOption?: string, fallback = 'app'): string {
+  return getProject(cliOption) ?? fallback;
+}
+
 export function requireProject(cliOption?: string): string {
   const project = getProject(cliOption);
   if (!project) {

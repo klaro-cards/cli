@@ -18,6 +18,7 @@ import {
   readConfig,
   writeConfig,
   getProject,
+  getProjectOrDefault,
   requireProject,
   requireToken,
 } from '../src/lib/config.js';
@@ -283,6 +284,34 @@ describe('config', () => {
 
       const project = getProject();
       expect(project).toBeUndefined();
+    });
+  });
+
+  describe('getProjectOrDefault', () => {
+    it('should return CLI option if provided', () => {
+      expect(getProjectOrDefault('cli-project')).toBe('cli-project');
+    });
+
+    it('should return config project if no CLI option', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockImplementation((path) => {
+        if (typeof path === 'string' && path.endsWith('config.json')) {
+          return '{"project":"config-project"}';
+        }
+        return '{}';
+      });
+
+      expect(getProjectOrDefault()).toBe('config-project');
+    });
+
+    it('should return "app" fallback if no project set', () => {
+      mockExistsSync.mockReturnValue(false);
+      expect(getProjectOrDefault()).toBe('app');
+    });
+
+    it('should return custom fallback if provided', () => {
+      mockExistsSync.mockReturnValue(false);
+      expect(getProjectOrDefault(undefined, 'custom')).toBe('custom');
     });
   });
 
