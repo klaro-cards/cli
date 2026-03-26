@@ -54,6 +54,34 @@ npm run build   # Build
 npm test        # Run tests
 ```
 
+### Running from source
+
+Build and run directly:
+
+```bash
+npm run build
+node dist/index.js
+```
+
+Or use watch mode for development (auto-recompiles on changes):
+
+```bash
+npm run dev
+```
+
+Then in another terminal:
+
+```bash
+node dist/index.js
+```
+
+To make the `klaro` command available globally from your local checkout:
+
+```bash
+npm link
+klaro
+```
+
 ## License
 
 MIT
