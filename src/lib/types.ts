@@ -68,6 +68,30 @@ export interface UpdateStoryInput {
   [key: string]: string | number | undefined;
 }
 
+export interface CreateAttachmentInput {
+  story: string;
+  filename: string;
+  url: string;
+  description?: string;
+  isCover: boolean;
+  sizeInBytes: number;
+}
+
+export interface StoryAttachment {
+  id: number;
+  filename: string;
+  url: string;
+  description?: string;
+  isCover: boolean;
+  sizeInBytes: number;
+  [key: string]: unknown;
+}
+
+export interface SeshatUploadResult {
+  name: string;
+  originalname?: string;
+}
+
 export interface Dimension {
   code: string;
   label?: string;

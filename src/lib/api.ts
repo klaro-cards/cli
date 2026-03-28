@@ -1,4 +1,4 @@
-import type { AuthToken, Story, CreateStoryInput, ListStoriesOptions, UpdateStoryInput, Project, Board, Dimension } from './types.js';
+import type { AuthToken, Story, CreateStoryInput, ListStoriesOptions, UpdateStoryInput, Project, Board, Dimension, CreateAttachmentInput, StoryAttachment, SeshatUploadResult } from './types.js';
 import type { Connector } from './connector.js';
 import { trace } from './trace.js';
 import { getProject } from './config.js';
@@ -180,6 +180,44 @@ export class KlaroApi implements Connector {
 
   async listDimensions(): Promise<Dimension[]> {
     return this.request<Dimension[]>('GET', '/dimensions/');
+  }
+
+  async uploadFile(fileBuffer: Buffer, filename: string): Promise<string> {
+    const url = `https://${this.subdomain}.klaro.cards/s/`;
+    const form = new FormData();
+    form.append(filename, new Blob([new Uint8Array(fileBuffer)]), filename);
+
+    const headers: Record<string, string> = {
+      'X-Klaro-Project-Subdomain': this.subdomain,
+    };
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    trace('Request', { method: 'POST', url, headers: sanitizeHeaders(headers), body: `<file: ${filename}>` });
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: form,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      trace('Response Error', { status: response.status, body: text });
+      throw new KlaroApiError(response.status, `Upload failed: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json() as SeshatUploadResult[];
+    trace('Response', { status: response.status, body: result });
+
+    const uploaded = result[0];
+    const originalName = uploaded.originalname || uploaded.name;
+    return `/s/${uploaded.name}?n=${encodeURIComponent(originalName)}`;
+  }
+
+  async createAttachment(storyId: string, input: CreateAttachmentInput): Promise<StoryAttachment> {
+    return this.request<StoryAttachment>('POST', `/stories/${storyId}/attachments/`, input);
   }
 }
 
