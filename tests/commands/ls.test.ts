@@ -9,6 +9,7 @@ vi.mock('../../src/lib/config.js', () => ({
 
 vi.mock('../../src/lib/api.js', () => ({
   createClient: vi.fn(),
+  KlaroApi: vi.fn(),
   KlaroApiError: class KlaroApiError extends Error {
     status: number;
     constructor(status: number, message: string) {
@@ -25,7 +26,7 @@ vi.mock('../../src/lib/defaults.js', () => ({
 }));
 
 import { getProjectOrDefault, requireProject, requireToken } from '../../src/lib/config.js';
-import { createClient, KlaroApiError } from '../../src/lib/api.js';
+import { createClient, KlaroApi, KlaroApiError } from '../../src/lib/api.js';
 import { resolveBoard, resolveDims } from '../../src/lib/defaults.js';
 import { createLsCommand } from '../../src/commands/ls.js';
 import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
@@ -323,6 +324,67 @@ describe('ls command', () => {
 
       expect(mockListStories).toHaveBeenCalledWith('backlog', { limit: 20, filters: {} });
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CARD-1'));
+    });
+  });
+
+  describe('ls attachments', () => {
+    const mockGetStories = vi.fn();
+    const mockListAttachments = vi.fn();
+
+    beforeEach(() => {
+      vi.mocked(KlaroApi).mockImplementation(() => ({
+        getStories: mockGetStories,
+        listAttachments: mockListAttachments,
+      }) as any);
+    });
+
+    it('should list attachments on a card', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+      mockResolveBoard.mockReturnValue('all');
+
+      mockGetStories.mockResolvedValue([{ id: 999, identifier: '42', title: 'Test card' }]);
+      mockListAttachments.mockResolvedValue([
+        { id: 1, filename: 'photo.jpg', url: '/s/abc.jpg', sizeInBytes: 1024, isCover: false },
+        { id: 2, filename: 'doc.pdf', url: '/s/def.pdf', sizeInBytes: 2048, isCover: true },
+      ]);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'attachments', '42']);
+
+      expect(mockGetStories).toHaveBeenCalledWith('all', [42]);
+      expect(mockListAttachments).toHaveBeenCalledWith('999');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('photo.jpg'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('doc.pdf'));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2 attachment(s) on card 42'));
+    });
+
+    it('should show message when no attachments found', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+      mockResolveBoard.mockReturnValue('all');
+
+      mockGetStories.mockResolvedValue([{ id: 999, identifier: '42', title: 'Test card' }]);
+      mockListAttachments.mockResolvedValue([]);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'attachments', '42']);
+
+      expect(consoleSpy).toHaveBeenCalledWith('No attachments on card 42.');
+    });
+
+    it('should error when card is not found', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+      mockResolveBoard.mockReturnValue('all');
+
+      mockGetStories.mockResolvedValue([]);
+
+      const cmd = createLsCommand();
+      await cmd.parseAsync(['node', 'test', 'attachments', '99']);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Card 99 not found');
+      expect(exitSpy).toHaveBeenCalledWith(1);
     });
   });
 });

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { createClient, KlaroApiError } from '../lib/api.js';
+import { createClient, KlaroApi, KlaroApiError } from '../lib/api.js';
 import { getProjectOrDefault, requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard, resolveDims } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
@@ -156,6 +156,51 @@ async function lsDimensionsAction(_options: unknown, command: Command): Promise<
   }
 }
 
+interface LsAttachmentsOptions {
+  board?: string;
+}
+
+async function lsAttachmentsAction(identifier: string, options: LsAttachmentsOptions, command: Command): Promise<void> {
+  try {
+    const globalOpts = command.optsWithGlobals();
+    const project = requireProject(globalOpts.project);
+    const token = requireToken();
+    const board = resolveBoard(globalOpts.board ?? options.board, project);
+
+    const api = new KlaroApi(project, token);
+
+    // Resolve card identifier to story ID
+    const stories = await api.getStories(board, [Number(identifier)]);
+    if (stories.length === 0) {
+      console.error(`Error: Card ${identifier} not found`);
+      process.exit(1);
+      return;
+    }
+    const storyId = String(stories[0].id);
+
+    const attachments = await api.listAttachments(storyId);
+
+    if (attachments.length === 0) {
+      console.log(`No attachments on card ${identifier}.`);
+      return;
+    }
+
+    const columns = ['filename', 'url', 'sizeInBytes', 'isCover'];
+    printTable(attachments, columns);
+
+    console.log(`\nShowing ${attachments.length} attachment(s) on card ${identifier}`);
+  } catch (error) {
+    if (error instanceof KlaroApiError) {
+      console.error(`Error: ${error.message}`);
+    } else if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+    } else {
+      console.error('An unexpected error occurred');
+    }
+    process.exit(1);
+  }
+}
+
 function createCardsSubcommand(isDefault = false): Command {
   const cmd = new Command('cards')
     .description('List cards in a board' + (isDefault ? ' (default)' : ''))
@@ -186,6 +231,14 @@ function createDimensionsSubcommand(): Command {
     .action(lsDimensionsAction);
 }
 
+function createAttachmentsSubcommand(): Command {
+  return new Command('attachments')
+    .description('List attachments on a card')
+    .argument('<identifier>', 'Card identifier (number)')
+    .option('-b, --board <board>', 'Board identifier (default: "all")')
+    .action(lsAttachmentsAction);
+}
+
 export function createLsCommand(): Command {
   const cmd = new Command('ls')
     .description('List cards, projects, boards, or dimensions');
@@ -194,6 +247,7 @@ export function createLsCommand(): Command {
   cmd.addCommand(createProjectsSubcommand());
   cmd.addCommand(createBoardsSubcommand());
   cmd.addCommand(createDimensionsSubcommand());
+  cmd.addCommand(createAttachmentsSubcommand());
 
   return cmd;
 }

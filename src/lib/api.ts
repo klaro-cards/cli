@@ -219,6 +219,10 @@ export class KlaroApi implements Connector {
   async createAttachment(storyId: string, input: CreateAttachmentInput): Promise<StoryAttachment> {
     return this.request<StoryAttachment>('POST', `/stories/${storyId}/attachments/`, input);
   }
+
+  async listAttachments(storyId: string): Promise<StoryAttachment[]> {
+    return this.request<StoryAttachment[]>('GET', `/stories/${storyId}/attachments/`);
+  }
 }
 
 export function createClient(subdomain: string, token?: string): Connector {

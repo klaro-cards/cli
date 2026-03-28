@@ -11,8 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`attach` command** - Attach files to cards by uploading to seshat and
   creating a story attachment
+  - Supports multiple files in a single command
   - `-d/--description` option for attachment description
   - `--cover` flag to set attachment as card cover image
+- **`ls attachments <identifier>`** - List attachments on a card
 
 ## [1.1.1] - 2026-03-28
 
