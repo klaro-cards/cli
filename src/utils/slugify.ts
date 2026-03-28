@@ -8,6 +8,7 @@
  */
 export function slugify(text: string): string {
   return text
+    .split('\n')[0]                        // Use only the first line
     .normalize('NFD')                    // Decompose accents (é -> e + ́)
     .replace(/[\u0300-\u036f]/g, '')     // Remove diacritics
     .toLowerCase()

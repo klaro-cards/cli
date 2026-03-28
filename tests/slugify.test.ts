@@ -35,6 +35,11 @@ describe('slugify', () => {
     expect(slugify('')).toBe('');
   });
 
+  it('should use only the first line of multiline text', () => {
+    expect(slugify('First line\nSecond line\nThird line')).toBe('first-line');
+    expect(slugify('Card title\nWith extra details')).toBe('card-title');
+  });
+
   it('should handle complex titles', () => {
     expect(slugify('Fix: authentication bug (urgent!)')).toBe('fix-authentication-bug-urgent');
     expect(slugify("L'été est là")).toBe('l-ete-est-la');
