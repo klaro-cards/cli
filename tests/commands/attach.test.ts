@@ -88,9 +88,25 @@ describe('attach command', () => {
       isCover: false,
       sizeInBytes: 1024,
     });
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Attached photo.jpg to card 42 (/s/abc123.jpg?n=photo.jpg)'
-    );
+    expect(consoleSpy).toHaveBeenCalledWith('Attached photo.jpg to card 42');
+  });
+
+  it('should attach multiple files to a card', async () => {
+    mockGetStories.mockResolvedValue([{ id: 999, identifier: '42', title: 'Test card' }]);
+    mockUploadFile
+      .mockResolvedValueOnce('/s/abc.jpg?n=photo.jpg')
+      .mockResolvedValueOnce('/s/def.pdf?n=doc.pdf');
+    mockCreateAttachment.mockResolvedValue({ id: 1 });
+
+    const cmd = createAttachCommand();
+    await cmd.parseAsync(['node', 'test', '42', 'photo.jpg', 'doc.pdf']);
+
+    expect(mockUploadFile).toHaveBeenCalledTimes(2);
+    expect(mockCreateAttachment).toHaveBeenCalledTimes(2);
+    expect(mockCreateAttachment).toHaveBeenCalledWith('999', expect.objectContaining({ filename: 'photo.jpg' }));
+    expect(mockCreateAttachment).toHaveBeenCalledWith('999', expect.objectContaining({ filename: 'doc.pdf' }));
+    expect(consoleSpy).toHaveBeenCalledWith('Attached photo.jpg to card 42');
+    expect(consoleSpy).toHaveBeenCalledWith('Attached doc.pdf to card 42');
   });
 
   it('should pass description and cover options', async () => {

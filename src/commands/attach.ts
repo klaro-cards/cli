@@ -11,16 +11,12 @@ interface AttachOptions {
   cover?: boolean;
 }
 
-export async function attachAction(identifier: string, filePath: string, options: AttachOptions, command: Command): Promise<void> {
+export async function attachAction(identifier: string, filePaths: string[], options: AttachOptions, command: Command): Promise<void> {
   try {
     const globalOpts = command.optsWithGlobals();
     const project = requireProject(globalOpts.project);
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
-
-    const filename = basename(filePath);
-    const fileBuffer = readFileSync(filePath);
-    const sizeInBytes = statSync(filePath).size;
 
     const api = new KlaroApi(project, token);
 
@@ -33,20 +29,26 @@ export async function attachAction(identifier: string, filePath: string, options
     }
     const storyId = String(stories[0].id);
 
-    // Upload file to seshat
-    const url = await api.uploadFile(fileBuffer, filename);
+    for (const filePath of filePaths) {
+      const filename = basename(filePath);
+      const fileBuffer = readFileSync(filePath);
+      const sizeInBytes = statSync(filePath).size;
 
-    // Create the attachment on the story
-    const attachment = await api.createAttachment(storyId, {
-      story: storyId,
-      filename,
-      url,
-      description: options.description || '',
-      isCover: options.cover || false,
-      sizeInBytes,
-    });
+      // Upload file to seshat
+      const url = await api.uploadFile(fileBuffer, filename);
 
-    console.log(`Attached ${filename} to card ${identifier} (${attachment.url})`);
+      // Create the attachment on the story
+      await api.createAttachment(storyId, {
+        story: storyId,
+        filename,
+        url,
+        description: options.description || '',
+        isCover: options.cover || false,
+        sizeInBytes,
+      });
+
+      console.log(`Attached ${filename} to card ${identifier}`);
+    }
   } catch (error) {
     if (error instanceof KlaroApiError) {
       console.error(`Error: ${error.message}`);
@@ -61,9 +63,9 @@ export async function attachAction(identifier: string, filePath: string, options
 
 export function createAttachCommand(): Command {
   return new Command('attach')
-    .description('Attach a file to a card')
+    .description('Attach files to a card')
     .argument('<identifier>', 'Card identifier (number)')
-    .argument('<file>', 'Path to the file to attach')
+    .argument('<files...>', 'Paths to the files to attach')
     .option('-b, --board <board>', 'Board identifier (default: "all")')
     .option('-d, --description <text>', 'Attachment description')
     .option('--cover', 'Set attachment as card cover image')
