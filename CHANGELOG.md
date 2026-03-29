@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-03-29
+
+### Added
+
+- **`detach` command** - Remove an attachment from a card
+  - Accepts attachment UUID or seshat URL (`/s/...`) as identifier
+  - Deletes both the seshat file and the attachment record by default
+  - `--keep-file` option to preserve the uploaded file in seshat
+- **`ls attachments`** now shows the attachment `id` (UUID) column
+
+### Changed
+
+- `StoryAttachment.id` is now a UUID string matching the API schema
+
 ## [1.2.1] - 2026-03-29
 
 ### Fixed
