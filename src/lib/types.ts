@@ -78,12 +78,14 @@ export interface CreateAttachmentInput {
 }
 
 export interface StoryAttachment {
-  id: number;
+  id: string;
   filename: string;
   url: string;
   description?: string;
   isCover: boolean;
   sizeInBytes: number;
+  createdAt?: string;
+  createdBy?: string;
   [key: string]: unknown;
 }
 

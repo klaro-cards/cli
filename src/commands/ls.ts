@@ -185,7 +185,7 @@ async function lsAttachmentsAction(identifier: string, options: LsAttachmentsOpt
       return;
     }
 
-    const columns = ['filename', 'url', 'sizeInBytes', 'isCover'];
+    const columns = ['id', 'filename', 'url', 'sizeInBytes', 'isCover'];
     printTable(attachments, columns);
 
     console.log(`\nShowing ${attachments.length} attachment(s) on card ${identifier}`);

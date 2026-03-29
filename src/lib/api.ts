@@ -223,6 +223,16 @@ export class KlaroApi implements Connector {
   async listAttachments(storyId: string): Promise<StoryAttachment[]> {
     return this.request<StoryAttachment[]>('GET', `/stories/${storyId}/attachments/`);
   }
+
+  async deleteAttachment(storyId: string, attachmentId: string): Promise<void> {
+    await this.request<void>('DELETE', `/stories/${storyId}/attachments/${attachmentId}`);
+  }
+
+  async deleteSeshatFile(url: string): Promise<void> {
+    const seshatUrl = `https://${this.subdomain}.klaro.cards${url}`;
+    const headers = buildHeaders(this.subdomain, this.token);
+    await doFetch<void>('DELETE', seshatUrl, headers);
+  }
 }
 
 export function createClient(subdomain: string, token?: string): Connector {
