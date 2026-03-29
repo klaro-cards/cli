@@ -47,6 +47,15 @@ This is a CLI tool (`klaro`) for interacting with the Klaro Cards API, built wit
 * You MUST commit those .md task files if you change them as a result of your work
 * When you mark a card as DONE, if it does not have a number take the next available one
 
+### Documentation
+
+When adding or completing a feature, ensure all documentation is updated before releasing:
+
+* **CHANGELOG.md** — Add an entry under the current version describing what was added/changed/fixed
+* **README.md** — Update the Getting Started examples, the `--help` output block, and any relevant sections
+* **Cheatsheet** (`src/commands/cheatsheet.ts`) — Add usage examples for new commands or options
+* **`--help` descriptions** — Ensure the command's `.description()` text is clear and accurate
+
 ### Code quality
 
 * Don't Repeat Yourself (DRY)

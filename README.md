@@ -44,6 +44,17 @@ klaro read 42                     # read a card's full content
 klaro create "My new card"        # create a card
 klaro update 42 status=done       # update a card's dimension
 klaro edit 42                     # edit a card in your $EDITOR
+klaro write 42 -f card.md         # update a card from a file
+klaro describe dimension status   # see a dimension's values
+```
+
+Manage attachments:
+
+```bash
+klaro attach 42 photo.jpg         # attach a file to a card
+klaro ls attachments 42           # list attachments on a card
+klaro detach 42 <uuid>            # remove an attachment
+klaro detach 42 <uuid> --keep-file  # remove attachment, keep file
 ```
 
 Run `klaro cheatsheet` for more examples, or `klaro <command> --help` for detailed usage.
@@ -56,30 +67,41 @@ Usage: klaro [options] [command]
 Command-line interface for Klaro Cards
 
 Options:
-  -V, --version                     output the version number
-  --trace                           Enable API request/response tracing
-  --show <dimensions>               Dimensions to display (comma-separated)
-  --board <board>                   Board identifier
-  --save-defaults                   Save --show and --board as project defaults
-  -h, --help                        display help for command
+  -V, --version                               output the version number
+  --trace                                     Enable API request/response tracing
+  -p, --project <subdomain>                   Project subdomain
+  --dims <dimensions>                         Dimensions to include (comma-separated)
+  --board <board>                             Board identifier
+  --save-defaults                             Save --dims and --board as project defaults
+  -h, --help                                  display help for command
 
-Commands:
-  login                             Login to Klaro Cards
-  logout                            Logout from Klaro Cards
-  whoami                            Show the currently logged in user
-  use <subdomain>                   Set the default Klaro project
-  ls                                List cards, projects, boards, or dimensions
-  create [options] [title]          Create a new card in a board
-  del [options] <identifiers...>    Delete one or more cards by identifier
-  set [options] <identifiers...>    Update one or more cards by identifier
-  read [options] <identifiers...>   Read one or more cards and display as markdown
-  edit [options] <identifiers...>   Edit one or more cards in your default editor
-  config                            Manage project configuration and defaults
-  init [options] [folder]           Initialize Klaro configuration
-  cheatsheet [options]              Display a quick reference guide
-  fetch [options] <identifiers...>  Download cards as markdown files for offline editing
-  sync [options]                    Upload local card changes and delete synced files
-  help [command]                    display help for command
+Setup:
+  init [folder]                               Initialize Klaro configuration
+  login [options]                             Login to Klaro Cards
+  logout                                      Logout from Klaro Cards
+  whoami                                      Show the currently logged in user
+  use <subdomain>                             Set the default Klaro project
+  config                                      Manage project configuration and defaults
+
+Cards (and other objects):
+  ls                                          List cards, projects, boards, or dimensions
+  read [options] <identifiers...>             Read one or more cards and display as markdown
+  write [options] <identifier>                Update a card from markdown content (stdin or file)
+  create [options] [args...]                  Create a new card in a board
+  edit [options] <identifiers...>             Edit one or more cards in your default editor
+  update [options] <args...>                  Update one or more cards by identifier
+  del [options] <identifiers...>              Delete one or more cards by identifier
+  attach [options] <identifier> <files...>    Attach files to a card
+  detach [options] <identifier> <attachment>  Remove an attachment from a card
+  describe                                    Show detailed information about a dimension or board
+
+Offline:
+  fetch [options] <identifiers...>            Download cards as markdown files for offline editing
+  sync [options]                              Upload local card changes and delete synced files
+
+Help:
+  cheatsheet [options]                        Display a quick reference guide
+  help [command]                              display help for command
 ```
 
 Run `klaro cheatsheet` for common usage examples.
