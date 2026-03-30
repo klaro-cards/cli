@@ -138,3 +138,10 @@ export function requireToken(): string {
   }
   return token;
 }
+
+const DEFAULT_API_URL = 'https://api.klaro.cards';
+
+export function getApiUrl(): string {
+  const config = readConfig();
+  return config.api_url || DEFAULT_API_URL;
+}

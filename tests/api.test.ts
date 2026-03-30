@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { KlaroApi, KlaroApiError, createClient, sanitizeHeaders, buildHeaders } from '../src/lib/api.js';
+import { KlaroApi, KlaroApiError, createClient, sanitizeHeaders, buildHeaders, projectBaseUrl } from '../src/lib/api.js';
 
 vi.mock('../src/lib/config.js', () => ({
   getProject: vi.fn(() => undefined),
+  getApiUrl: vi.fn(() => 'https://api.klaro.cards'),
 }));
 
 function mockResponse(ok: boolean, data: unknown, status = 200, statusText = 'OK') {
@@ -273,5 +274,68 @@ describe('sanitizeHeaders', () => {
     expect(result['Accept']).toBe('application/json');
     expect(result['X-Custom-Header']).toBe('custom-value');
     expect(result['Authorization']).toBe('***');
+  });
+});
+
+describe('projectBaseUrl', () => {
+  it('should derive project URL from default API URL', () => {
+    expect(projectBaseUrl('https://api.klaro.cards', 'myproject'))
+      .toBe('https://myproject.klaro.cards');
+  });
+
+  it('should work with http scheme', () => {
+    expect(projectBaseUrl('http://api.klaro.devel', 'myproject'))
+      .toBe('http://myproject.klaro.devel');
+  });
+
+  it('should work with staging URLs', () => {
+    expect(projectBaseUrl('https://api.staging.klaro.cards', 'myproject'))
+      .toBe('https://myproject.staging.klaro.cards');
+  });
+
+  it('should work with custom domain', () => {
+    expect(projectBaseUrl('https://api.custom.example.com', 'myproject'))
+      .toBe('https://myproject.custom.example.com');
+  });
+});
+
+describe('KlaroApi with custom apiUrl', () => {
+  const mockFetch = vi.fn();
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', mockFetch);
+    mockFetch.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('should use custom API URL for project requests', async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, [])
+    );
+
+    const api = new KlaroApi('myproject', 'token', 'http://api.klaro.devel');
+    await api.listStories('backlog');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://myproject.klaro.devel/api/v1/boards/backlog/stories',
+      expect.any(Object)
+    );
+  });
+
+  it('should use custom API URL for auth requests', async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, { token_type: 'Bearer', access_token: 'tok', expires_in: 432000 })
+    );
+
+    const api = new KlaroApi('test', undefined, 'http://api.klaro.devel');
+    await api.login('user@example.com', 'pass');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://api.klaro.devel/v1/auth/tokens/',
+      expect.any(Object)
+    );
   });
 });

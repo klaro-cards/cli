@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { KlaroApi, KlaroApiError } from '../lib/api.js';
-import { requireProject, requireToken } from '../lib/config.js';
+import { requireProject, requireToken, getApiUrl } from '../lib/config.js';
 import { resolveBoard } from '../lib/defaults.js';
 
 interface DetachOptions {
@@ -19,7 +19,7 @@ export async function detachAction(identifier: string, attachment: string, optio
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
 
-    const api = new KlaroApi(project, token);
+    const api = new KlaroApi(project, token, getApiUrl());
 
     // Resolve card identifier to story ID
     const stories = await api.getStories(board, [Number(identifier)]);

@@ -21,6 +21,7 @@ import {
   getProjectOrDefault,
   requireProject,
   requireToken,
+  getApiUrl,
 } from '../src/lib/config.js';
 
 describe('config', () => {
@@ -354,6 +355,26 @@ describe('config', () => {
       mockExistsSync.mockReturnValue(false);
 
       expect(() => requireToken()).toThrow(/Not logged in/);
+    });
+  });
+
+  describe('getApiUrl', () => {
+    it('should return default API URL when not configured', () => {
+      mockExistsSync.mockReturnValue(false);
+
+      expect(getApiUrl()).toBe('https://api.klaro.cards');
+    });
+
+    it('should return configured API URL', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockImplementation((path) => {
+        if (typeof path === 'string' && path.endsWith('config.json')) {
+          return '{"api_url":"http://api.klaro.devel"}';
+        }
+        return '{}';
+      });
+
+      expect(getApiUrl()).toBe('http://api.klaro.devel');
     });
   });
 });

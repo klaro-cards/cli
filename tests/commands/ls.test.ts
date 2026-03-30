@@ -5,6 +5,7 @@ vi.mock('../../src/lib/config.js', () => ({
   getProjectOrDefault: vi.fn(),
   requireProject: vi.fn(),
   requireToken: vi.fn(),
+  getApiUrl: vi.fn(() => 'https://api.klaro.cards'),
 }));
 
 vi.mock('../../src/lib/api.js', () => ({

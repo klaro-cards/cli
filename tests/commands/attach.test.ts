@@ -4,6 +4,7 @@ import { readFileSync, statSync } from 'fs';
 vi.mock('../../src/lib/config.js', () => ({
   requireProject: vi.fn(),
   requireToken: vi.fn(),
+  getApiUrl: vi.fn(() => 'https://api.klaro.cards'),
 }));
 
 vi.mock('../../src/lib/api.js', () => ({
@@ -77,7 +78,7 @@ describe('attach command', () => {
     const cmd = createAttachCommand();
     await cmd.parseAsync(['node', 'test', '42', 'photo.jpg']);
 
-    expect(KlaroApi).toHaveBeenCalledWith('myproject', 'token123');
+    expect(KlaroApi).toHaveBeenCalledWith('myproject', 'token123', 'https://api.klaro.cards');
     expect(mockGetStories).toHaveBeenCalledWith('all', [42]);
     expect(mockUploadFile).toHaveBeenCalledWith(Buffer.from('file-content'), 'photo.jpg');
     expect(mockCreateAttachment).toHaveBeenCalledWith('999', {

@@ -1,7 +1,7 @@
 import { createInterface } from 'node:readline';
 import { Command } from 'commander';
 import { KlaroApi, KlaroApiError } from '../lib/api.js';
-import { readConfig, writeConfig } from '../lib/config.js';
+import { readConfig, writeConfig, getApiUrl } from '../lib/config.js';
 
 async function prompt(question: string, hidden = false): Promise<string> {
   if (hidden && process.stdin.isTTY) {
@@ -81,7 +81,7 @@ async function loginAction(options: { env?: boolean }): Promise<void> {
 
   try {
     console.log('Logging in...');
-    const api = new KlaroApi('app'); // subdomain not needed for login
+    const api = new KlaroApi('app', undefined, getApiUrl());
     const result = await api.login(email, password);
 
     const config = readConfig();

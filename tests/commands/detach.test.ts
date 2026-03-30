@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../../src/lib/config.js', () => ({
   requireProject: vi.fn(),
   requireToken: vi.fn(),
+  getApiUrl: vi.fn(() => 'https://api.klaro.cards'),
 }));
 
 vi.mock('../../src/lib/api.js', () => ({

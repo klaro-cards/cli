@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { createClient, KlaroApi, KlaroApiError } from '../lib/api.js';
-import { getProjectOrDefault, requireProject, requireToken } from '../lib/config.js';
+import { getProjectOrDefault, requireProject, requireToken, getApiUrl } from '../lib/config.js';
 import { resolveBoard, resolveDims } from '../lib/defaults.js';
 import { parseDimensions } from '../utils/dimensions.js';
 import { formatDimensionValues } from '../utils/format.js';
@@ -167,7 +167,7 @@ async function lsAttachmentsAction(identifier: string, options: LsAttachmentsOpt
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
 
-    const api = new KlaroApi(project, token);
+    const api = new KlaroApi(project, token, getApiUrl());
 
     // Resolve card identifier to story ID
     const stories = await api.getStories(board, [Number(identifier)]);

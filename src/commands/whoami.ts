@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { KlaroApi, KlaroApiError } from '../lib/api.js';
-import { getToken } from '../lib/config.js';
+import { getToken, getApiUrl } from '../lib/config.js';
 
 async function whoamiAction(): Promise<void> {
   const token = getToken();
@@ -10,7 +10,7 @@ async function whoamiAction(): Promise<void> {
   }
 
   try {
-    const api = new KlaroApi('app', token);
+    const api = new KlaroApi('app', token, getApiUrl());
     const me = await api.getMe();
     console.log(me.nickname ? `${me.email} (${me.nickname})` : me.email);
   } catch (error) {

@@ -1,11 +1,18 @@
 import type { AuthToken, Story, CreateStoryInput, ListStoriesOptions, UpdateStoryInput, Project, Board, Dimension, CreateAttachmentInput, StoryAttachment, SeshatUploadResult } from './types.js';
 import type { Connector } from './connector.js';
 import { trace } from './trace.js';
-import { getProject } from './config.js';
+import { getProject, getApiUrl } from './config.js';
 
 export type { Connector } from './connector.js';
 
-const AUTH_API_URL = 'https://api.klaro.cards/v1';
+const DEFAULT_API_URL = 'https://api.klaro.cards';
+
+export function projectBaseUrl(apiUrl: string, subdomain: string): string {
+  const url = new URL(apiUrl);
+  const hostParts = url.hostname.split('.');
+  hostParts[0] = subdomain;
+  return `${url.protocol}//${hostParts.join('.')}`;
+}
 
 export class KlaroApiError extends Error {
   constructor(
@@ -78,12 +85,14 @@ async function doFetch<T>(
 
 export class KlaroApi implements Connector {
   private subdomain: string;
+  private apiUrl: string;
   private baseUrl: string;
   private token?: string;
 
-  constructor(subdomain: string, token?: string) {
+  constructor(subdomain: string, token?: string, apiUrl: string = DEFAULT_API_URL) {
     this.subdomain = subdomain;
-    this.baseUrl = `https://${subdomain}.klaro.cards/api/v1`;
+    this.apiUrl = apiUrl;
+    this.baseUrl = `${projectBaseUrl(apiUrl, subdomain)}/api/v1`;
     this.token = token;
   }
 
@@ -95,7 +104,7 @@ export class KlaroApi implements Connector {
 
   async login(email: string, password: string): Promise<AuthToken> {
     const subdomain = getProject() || 'app';
-    const url = `${AUTH_API_URL}/auth/tokens/`;
+    const url = `${this.apiUrl}/v1/auth/tokens/`;
     const body = {
       grant_type: subdomain == 'app' ? 'auto_login' : 'client_credentials',
       client_id: email,
@@ -117,13 +126,13 @@ export class KlaroApi implements Connector {
   }
 
   async getMe(): Promise<{ email: string; nickname?: string }> {
-    const url = `${AUTH_API_URL}/auth/me`;
+    const url = `${this.apiUrl}/v1/auth/me`;
     const headers = buildHeaders(this.subdomain, this.token);
     return doFetch<{ email: string; nickname?: string }>('GET', url, headers);
   }
 
   async logout(): Promise<void> {
-    const url = `${AUTH_API_URL}/auth/tokens/self`;
+    const url = `${this.apiUrl}/v1/auth/tokens/self`;
     const headers = buildHeaders(this.subdomain, this.token);
     await doFetch<void>('DELETE', url, headers);
   }
@@ -183,7 +192,7 @@ export class KlaroApi implements Connector {
   }
 
   async uploadFile(fileBuffer: Buffer, filename: string): Promise<string> {
-    const url = `https://${this.subdomain}.klaro.cards/s/`;
+    const url = `${projectBaseUrl(this.apiUrl, this.subdomain)}/s/`;
     const form = new FormData();
     form.append(filename, new Blob([new Uint8Array(fileBuffer)]), filename);
 
@@ -229,12 +238,12 @@ export class KlaroApi implements Connector {
   }
 
   async deleteSeshatFile(url: string): Promise<void> {
-    const seshatUrl = `https://${this.subdomain}.klaro.cards${url}`;
+    const seshatUrl = `${projectBaseUrl(this.apiUrl, this.subdomain)}${url}`;
     const headers = buildHeaders(this.subdomain, this.token);
     await doFetch<void>('DELETE', seshatUrl, headers);
   }
 }
 
 export function createClient(subdomain: string, token?: string): Connector {
-  return new KlaroApi(subdomain, token);
+  return new KlaroApi(subdomain, token, getApiUrl());
 }

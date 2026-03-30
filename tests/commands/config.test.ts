@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('../../src/lib/config.js', () => ({
   requireProject: vi.fn(),
+  readConfig: vi.fn(() => ({})),
+  writeConfig: vi.fn(),
+  getApiUrl: vi.fn(() => 'https://api.klaro.cards'),
 }));
 
 vi.mock('../../src/lib/defaults.js', () => ({
@@ -11,7 +14,7 @@ vi.mock('../../src/lib/defaults.js', () => ({
   getProjectDefaults: vi.fn(),
 }));
 
-import { requireProject } from '../../src/lib/config.js';
+import { requireProject, readConfig, writeConfig } from '../../src/lib/config.js';
 import {
   setProjectDefault,
   unsetProjectDefault,
@@ -23,6 +26,8 @@ import { wrapWithGlobalOptions } from '../utils/test-helpers.js';
 
 describe('config command', () => {
   const mockRequireProject = vi.mocked(requireProject);
+  const mockReadConfig = vi.mocked(readConfig);
+  const mockWriteConfig = vi.mocked(writeConfig);
   const mockSetProjectDefault = vi.mocked(setProjectDefault);
   const mockUnsetProjectDefault = vi.mocked(unsetProjectDefault);
   const mockListProjectDefaults = vi.mocked(listProjectDefaults);
@@ -85,8 +90,22 @@ describe('config command', () => {
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'set', 'unknownkey', 'value']);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, dims');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, dims, api_url');
       expect(exitSpy).toHaveBeenCalledWith(1);
+      expect(mockSetProjectDefault).not.toHaveBeenCalled();
+    });
+
+    it('should set api_url as a global config value', async () => {
+      mockReadConfig.mockReturnValue({ project: 'myproject' });
+
+      const cmd = createConfigCommand();
+      await cmd.parseAsync(['node', 'test', 'set', 'api_url', 'http://api.klaro.devel']);
+
+      expect(mockWriteConfig).toHaveBeenCalledWith({
+        project: 'myproject',
+        api_url: 'http://api.klaro.devel',
+      });
+      expect(consoleSpy).toHaveBeenCalledWith('Set api_url="http://api.klaro.devel"');
       expect(mockSetProjectDefault).not.toHaveBeenCalled();
     });
   });
@@ -125,20 +144,31 @@ describe('config command', () => {
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
 
+    it('should unset api_url as a global config value', async () => {
+      mockReadConfig.mockReturnValue({ project: 'myproject', api_url: 'http://api.klaro.devel' });
+
+      const cmd = createConfigCommand();
+      await cmd.parseAsync(['node', 'test', 'unset', 'api_url']);
+
+      expect(mockWriteConfig).toHaveBeenCalledWith({ project: 'myproject' });
+      expect(consoleSpy).toHaveBeenCalledWith('Removed "api_url" (reset to default)');
+      expect(mockUnsetProjectDefault).not.toHaveBeenCalled();
+    });
+
     it('should error for unknown option key', async () => {
       mockRequireProject.mockReturnValue('myproject');
 
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'unset', 'unknownkey']);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, dims');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Unknown option "unknownkey". Valid options: board, dims, api_url');
       expect(exitSpy).toHaveBeenCalledWith(1);
       expect(mockUnsetProjectDefault).not.toHaveBeenCalled();
     });
   });
 
   describe('config list', () => {
-    it('should list all defaults for current project', async () => {
+    it('should show global settings and project defaults', async () => {
       mockRequireProject.mockReturnValue('myproject');
       mockListProjectDefaults.mockReturnValue({ board: 'backlog' });
       mockGetProjectDefaults.mockReturnValue({ board: 'backlog' });
@@ -146,8 +176,9 @@ describe('config command', () => {
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'list']);
 
-      expect(mockRequireProject).toHaveBeenCalledWith(undefined);
-      expect(consoleSpy).toHaveBeenCalledWith('Defaults for project "myproject":\n');
+      expect(consoleSpy).toHaveBeenCalledWith('Global settings:\n');
+      expect(consoleSpy).toHaveBeenCalledWith('  api_url: https://api.klaro.cards (default)');
+      expect(consoleSpy).toHaveBeenCalledWith('\nDefaults for project "myproject":\n');
       expect(consoleSpy).toHaveBeenCalledWith('  board: backlog (configured)');
     });
 
@@ -162,7 +193,7 @@ describe('config command', () => {
       expect(consoleSpy).toHaveBeenCalledWith('  board: all (default)');
     });
 
-    it('should error if no project is set', async () => {
+    it('should show only global settings if no project is set', async () => {
       mockRequireProject.mockImplementation(() => {
         throw new Error('No project specified');
       });
@@ -170,8 +201,9 @@ describe('config command', () => {
       const cmd = createConfigCommand();
       await cmd.parseAsync(['node', 'test', 'list']);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('No project specified');
-      expect(exitSpy).toHaveBeenCalledWith(1);
+      expect(consoleSpy).toHaveBeenCalledWith('Global settings:\n');
+      expect(consoleSpy).toHaveBeenCalledWith('  api_url: https://api.klaro.cards (default)');
+      expect(mockListProjectDefaults).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { KlaroApi, KlaroApiError } from '../lib/api.js';
-import { readConfig, writeConfig, getToken } from '../lib/config.js';
+import { readConfig, writeConfig, getToken, getApiUrl } from '../lib/config.js';
 
 async function logoutAction(): Promise<void> {
   const token = getToken();
@@ -10,7 +10,7 @@ async function logoutAction(): Promise<void> {
   }
 
   try {
-    const api = new KlaroApi('app', token);
+    const api = new KlaroApi('app', token, getApiUrl());
     await api.logout();
   } catch (error) {
     if (error instanceof KlaroApiError) {

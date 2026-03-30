@@ -57,6 +57,15 @@ klaro detach 42 <uuid>            # remove an attachment
 klaro detach 42 <uuid> --keep-file  # remove attachment, keep file
 ```
 
+Configure defaults and target a different Klaro instance:
+
+```bash
+klaro config set board backlog                       # set default board
+klaro config set api_url http://api.klaro.devel      # use a different instance
+klaro config unset api_url                           # reset to https://api.klaro.cards
+klaro config list                                    # view current configuration
+```
+
 Run `klaro cheatsheet` for more examples, or `klaro <command> --help` for detailed usage.
 
 ## Usage

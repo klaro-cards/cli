@@ -11,6 +11,7 @@ export interface Config {
   token?: string;
   project?: string;
   email?: string;
+  api_url?: string;
   projectDefaults?: Record<string, ProjectDefaults>;
 }
 

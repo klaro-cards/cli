@@ -56,6 +56,7 @@ const EXAMPLES = Bmg([
   { category: 'Offline', example: 'klaro sync --keep', explanation: 'Upload changes but keep local files' },
   { category: 'Defaults', example: 'klaro config set board backlog', explanation: 'Set default board' },
   { category: 'Defaults', example: 'klaro config set dims progress,assignee', explanation: 'Set default dimensions' },
+  { category: 'Defaults', example: 'klaro config set api_url http://api.klaro.devel', explanation: 'Use a different Klaro instance' },
   { category: 'Defaults', example: 'klaro --save-defaults ls --dims progress', explanation: 'Save defaults as you go' },
   { category: 'Defaults', example: 'klaro config list', explanation: 'View saved defaults' },
 ]).group(['example', 'explanation'], 'examples', { allbut: true });

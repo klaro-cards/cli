@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { readFileSync, statSync } from 'fs';
 import { basename } from 'path';
 import { KlaroApi, KlaroApiError } from '../lib/api.js';
-import { requireProject, requireToken } from '../lib/config.js';
+import { requireProject, requireToken, getApiUrl } from '../lib/config.js';
 import { resolveBoard } from '../lib/defaults.js';
 
 interface AttachOptions {
@@ -18,7 +18,7 @@ export async function attachAction(identifier: string, filePaths: string[], opti
     const token = requireToken();
     const board = resolveBoard(globalOpts.board ?? options.board, project);
 
-    const api = new KlaroApi(project, token);
+    const api = new KlaroApi(project, token, getApiUrl());
 
     // Resolve card identifier to story ID
     const stories = await api.getStories(board, [Number(identifier)]);

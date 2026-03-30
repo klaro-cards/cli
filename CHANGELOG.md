@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Configurable API URL** — Target different Klaro instances (e.g. `klaro.devel`, `staging.klaro.cards`, customer domains)
+  - `klaro config set api_url http://api.klaro.devel` to switch instances
+  - `klaro config unset api_url` to reset to the default (`https://api.klaro.cards`)
+  - `klaro config list` now shows global settings (including `api_url`) alongside project defaults
+  - Supports both `http` and `https` schemes
+
 ## [1.3.0] - 2026-03-29
 
 ### Added
