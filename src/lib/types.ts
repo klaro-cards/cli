@@ -67,7 +67,7 @@ export interface ListStoriesOptions {
 
 export interface UpdateStoryInput {
   identifier: number;
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | string[] | number[] | undefined;
 }
 
 export interface CreateAttachmentInput {

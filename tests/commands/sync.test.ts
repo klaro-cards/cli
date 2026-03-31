@@ -178,6 +178,32 @@ describe('sync command', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid filename format'));
   });
 
+  it('should sync link dimensions (arrays) from frontmatter', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('all');
+    mockExistsSync.mockReturnValue(true);
+    mockReaddirSync.mockReturnValue(['12-test-card.md'] as unknown as ReturnType<typeof readdirSync>);
+    mockReadFileSync.mockReturnValue(
+      '---\nsee_also:\n  - 137\n  - 138\n  - 139\n---\n# Test card\n\nDescription here'
+    );
+
+    const mockUpdateStories = vi.fn().mockResolvedValue({});
+    mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
+
+    const cmd = createSyncCommand();
+    await cmd.parseAsync(['node', 'test']);
+
+    expect(mockUpdateStories).toHaveBeenCalledWith('all', [
+      {
+        identifier: 12,
+        title: 'Test card',
+        specification: 'Description here',
+        see_also: [137, 138, 139],
+      },
+    ]);
+  });
+
   it('should handle API errors', async () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');

@@ -1,5 +1,5 @@
 import type { Story, UpdateStoryInput } from '../lib/types.js';
-import { formatStoryMarkdown, parseStoryMarkdown } from './story-markdown.js';
+import { formatStoryMarkdown, parseStoryMarkdown, toUpdateInput } from './story-markdown.js';
 import { openInEditor } from './editor.js';
 import { slugify } from './slugify.js';
 
@@ -31,19 +31,7 @@ export function editStoryInEditor(story: Story, dimensions?: string[]): EditStor
 
   try {
     const parsed = parseStoryMarkdown(edited);
-    const update: UpdateStoryInput = {
-      identifier: parseInt(story.identifier, 10),
-      title: parsed.title,
-      specification: parsed.specification ?? '',
-    };
-    // Add dimensions if present
-    if (parsed.dimensions) {
-      for (const [key, value] of Object.entries(parsed.dimensions)) {
-        if (typeof value === 'string' || typeof value === 'number') {
-          update[key] = value;
-        }
-      }
-    }
+    const update = toUpdateInput(parsed, parseInt(story.identifier, 10));
     return { changed: true, update };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to parse edited content';

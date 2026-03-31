@@ -43,6 +43,21 @@ describe('parseDimensions', () => {
       'Invalid dimension format: "invalid". Expected format: key=value'
     );
   });
+
+  it('should collect repeated keys into an array', () => {
+    const result = parseDimensions(['see_also=137', 'see_also=138', 'see_also=139']);
+    expect(result).toEqual({ see_also: ['137', '138', '139'] });
+  });
+
+  it('should keep single values as strings not arrays', () => {
+    const result = parseDimensions(['see_also=137', 'progress=todo']);
+    expect(result).toEqual({ see_also: '137', progress: 'todo' });
+  });
+
+  it('should handle two repeated keys as an array', () => {
+    const result = parseDimensions(['tag=a', 'tag=b']);
+    expect(result).toEqual({ tag: ['a', 'b'] });
+  });
 });
 
 describe('splitArgs', () => {

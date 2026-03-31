@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatStoryMarkdown, parseStoryMarkdown } from '../src/utils/story-markdown.js';
+import { formatStoryMarkdown, parseStoryMarkdown, toUpdateInput } from '../src/utils/story-markdown.js';
 
 describe('formatStoryMarkdown', () => {
   it('should format story with title only', () => {
@@ -216,5 +216,27 @@ describe('parseStoryMarkdown', () => {
     expect(parsed.title).toBe('Test title');
     expect(parsed.specification).toBe('Test description');
     expect(parsed.dimensions).toEqual({ assignee: 'Claude', progress: 'doing' });
+  });
+});
+
+describe('toUpdateInput', () => {
+  it('should build update from parsed story with scalar dimensions', () => {
+    const result = toUpdateInput({ title: 'Card', specification: 'Desc', dimensions: { progress: 'done' } }, 42);
+    expect(result).toEqual({ identifier: 42, title: 'Card', specification: 'Desc', progress: 'done' });
+  });
+
+  it('should include array dimensions', () => {
+    const result = toUpdateInput({ title: 'Card', dimensions: { see_also: [137, 138] } }, 10);
+    expect(result).toEqual({ identifier: 10, title: 'Card', specification: '', see_also: [137, 138] });
+  });
+
+  it('should throw on unsupported dimension types', () => {
+    expect(() => toUpdateInput({ title: 'Card', dimensions: { bad: { nested: true } } }, 1))
+      .toThrow('Unsupported dimension value for "bad": expected string, number, or array');
+  });
+
+  it('should handle no dimensions', () => {
+    const result = toUpdateInput({ title: 'Card' }, 5);
+    expect(result).toEqual({ identifier: 5, title: 'Card', specification: '' });
   });
 });

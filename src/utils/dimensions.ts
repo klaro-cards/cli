@@ -24,8 +24,8 @@ export function splitArgs(args: string[]): { regularArgs: string[]; dimensionArg
  * @returns Object mapping dimension keys to values
  * @throws Error if any dimension is not in "key=value" format
  */
-export function parseDimensions(dimensionArgs?: string[]): Record<string, string> {
-  const dimensions: Record<string, string> = {};
+export function parseDimensions(dimensionArgs?: string[]): Record<string, string | string[]> {
+  const dimensions: Record<string, string | string[]> = {};
 
   if (!dimensionArgs) {
     return dimensions;
@@ -38,7 +38,12 @@ export function parseDimensions(dimensionArgs?: string[]): Record<string, string
     }
     const key = arg.substring(0, eqIndex);
     const value = arg.substring(eqIndex + 1);
-    dimensions[key] = value;
+    const existing = dimensions[key];
+    if (existing !== undefined) {
+      dimensions[key] = Array.isArray(existing) ? [...existing, value] : [existing, value];
+    } else {
+      dimensions[key] = value;
+    }
   }
 
   return dimensions;

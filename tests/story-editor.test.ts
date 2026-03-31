@@ -93,6 +93,22 @@ describe('editStoryInEditor', () => {
     expect(result.changed).toBe(false);
   });
 
+  it('includes link dimensions (arrays) in update', () => {
+    mockOpenInEditor.mockReturnValue(
+      '---\nsee_also:\n  - 137\n  - 138\n  - 139\n---\n\n# Updated title\n\nDescription'
+    );
+
+    const result = editStoryInEditor(baseStory, ['see_also']);
+
+    expect(result.changed).toBe(true);
+    expect(result.update).toEqual({
+      identifier: 42,
+      title: 'Updated title',
+      specification: 'Description',
+      see_also: [137, 138, 139],
+    });
+  });
+
   it('handles whitespace-only changes as no change', () => {
     mockOpenInEditor.mockReturnValue('# Test card\n  \n');
 

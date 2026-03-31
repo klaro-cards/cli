@@ -22,7 +22,7 @@ async function lsCardsAction(options: LsCardsOptions, command: Command): Promise
     const board = resolveBoard(globalOpts.board ?? options.board, project);
     const dims = resolveDims(globalOpts.dims ?? options.dims, project);
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
-    const filters = parseDimensions(options.filter);
+    const filters = parseDimensions(options.filter) as Record<string, string>;
 
     const api = createClient(project, token);
     const stories = await api.listStories(board, { limit, filters });

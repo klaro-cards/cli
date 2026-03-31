@@ -133,6 +133,24 @@ describe('update command', () => {
     expect(mockRequireProject).toHaveBeenCalledWith('custom-project');
   });
 
+  it('should collect repeated keys into arrays', async () => {
+    mockRequireProject.mockReturnValue('myproject');
+    mockRequireToken.mockReturnValue('token123');
+    mockResolveBoard.mockReturnValue('backlog');
+
+    const mockUpdateStories = vi.fn().mockResolvedValue([
+      { id: 1, identifier: 'CARD-12', title: 'Test card', see_also: [137, 138, 139] },
+    ]);
+    mockCreateClient.mockReturnValue({ updateStories: mockUpdateStories } as any);
+
+    const cmd = createUpdateCommand();
+    await cmd.parseAsync(['node', 'test', '12', 'see_also=137', 'see_also=138', 'see_also=139', '-b', 'backlog']);
+
+    expect(mockUpdateStories).toHaveBeenCalledWith('backlog', [
+      { identifier: 12, see_also: ['137', '138', '139'] },
+    ]);
+  });
+
   it('should error when no dimensions provided', async () => {
     mockRequireProject.mockReturnValue('myproject');
     mockRequireToken.mockReturnValue('token123');

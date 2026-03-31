@@ -5,7 +5,7 @@ import { createClient, KlaroApiError } from '../lib/api.js';
 import type { UpdateStoryInput } from '../lib/types.js';
 import { requireProject, requireToken } from '../lib/config.js';
 import { resolveBoard } from '../lib/defaults.js';
-import { parseStoryMarkdown } from '../utils/story-markdown.js';
+import { parseStoryMarkdown, toUpdateInput } from '../utils/story-markdown.js';
 import { getContentDir, listContentFiles, extractIdentifierFromFilename } from '../utils/content.js';
 
 interface SyncOptions {
@@ -62,20 +62,7 @@ async function syncAction(options: SyncOptions, command: Command): Promise<void>
         const content = readFileSync(filepath, 'utf-8');
         const parsed = parseStoryMarkdown(content);
 
-        const update: UpdateStoryInput = {
-          identifier,
-          title: parsed.title,
-          specification: parsed.specification ?? '',
-        };
-
-        // Add dimensions if present
-        if (parsed.dimensions) {
-          for (const [key, value] of Object.entries(parsed.dimensions)) {
-            if (typeof value === 'string' || typeof value === 'number') {
-              update[key] = value;
-            }
-          }
-        }
+        const update = toUpdateInput(parsed, identifier);
 
         updates.push(update);
         fileMap.set(identifier, filename);

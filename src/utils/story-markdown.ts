@@ -1,5 +1,5 @@
 import { stringify, parse } from 'yaml';
-import type { Story } from '../lib/types.js';
+import type { Story, UpdateStoryInput } from '../lib/types.js';
 
 export interface ParsedStory {
   title: string;
@@ -136,4 +136,29 @@ export function parseStoryMarkdown(markdown: string): ParsedStory {
     specification: description || undefined,
     dimensions,
   };
+}
+
+/**
+ * Build an UpdateStoryInput from a ParsedStory and identifier.
+ */
+export function toUpdateInput(parsed: ParsedStory, identifier: number): UpdateStoryInput {
+  const update: UpdateStoryInput = {
+    identifier,
+    title: parsed.title,
+    specification: parsed.specification ?? '',
+  };
+
+  if (parsed.dimensions) {
+    for (const [key, value] of Object.entries(parsed.dimensions)) {
+      if (typeof value === 'string' || typeof value === 'number') {
+        update[key] = value;
+      } else if (Array.isArray(value)) {
+        update[key] = value;
+      } else {
+        throw new Error(`Unsupported dimension value for "${key}": expected string, number, or array`);
+      }
+    }
+  }
+
+  return update;
 }
