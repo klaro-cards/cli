@@ -42,6 +42,7 @@ const EXAMPLES = Bmg([
   { category: 'Duplicating', example: 'klaro read 3 | klaro create assignee=Bob', explanation: 'Duplicate and reassign' },
   { category: 'Updating', example: 'klaro update 1 progress=done', explanation: 'Update a dimension' },
   { category: 'Updating', example: 'klaro upd 1 2 3 progress=done', explanation: 'Update multiple cards' },
+  { category: 'Updating', example: 'klaro update 1 see_also=2 see_also=3', explanation: 'Set a link dimension (array)' },
   { category: 'Updating', example: 'klaro del 1', explanation: 'Delete a card' },
   { category: 'Attachments', example: 'klaro attach 1 photo.jpg', explanation: 'Attach a file to a card' },
   { category: 'Attachments', example: 'klaro attach 1 a.jpg b.pdf', explanation: 'Attach multiple files at once' },

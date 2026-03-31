@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-03-31
+
+### Fixed
+
+- **`sync`/`edit` commands** — Link dimensions (e.g. `see_also: [137, 138, 139]`) in YAML frontmatter were silently ignored; now correctly sent to the API
+- **`update` command** — Repeated keys (e.g. `see_also=137 see_also=138 see_also=139`) overwrote each other instead of being collected into an array
+- Unsupported dimension value types now throw an explicit error instead of being silently dropped
+
+### Added
+
+- **`describe board`** now shows the board objective when available
+
+### Changed
+
+- Extracted `toUpdateInput()` helper to eliminate duplicated dimension-copying logic between `sync` and `edit`
+
 ## [1.4.0] - 2026-03-30
 
 ### Added

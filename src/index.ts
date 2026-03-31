@@ -137,7 +137,7 @@ const program = new KlaroCommand();
 program
   .name('klaro')
   .description('Command-line interface for Klaro Cards')
-  .version('1.4.0')
+  .version('1.4.1')
   .option('--trace', 'Enable API request/response tracing')
   .option('-p, --project <subdomain>', 'Project subdomain')
   .option('--dims <dimensions>', 'Dimensions to include (comma-separated)')

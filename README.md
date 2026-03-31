@@ -30,7 +30,7 @@ Explore the project structure:
 ```bash
 klaro ls boards            # list boards in the project
 klaro ls dimensions        # list available dimensions
-klaro describe board backlog       # see a board's filters
+klaro describe board backlog       # see a board's filters and objective
 klaro describe dimension status    # see a dimension's values
 ```
 
@@ -43,6 +43,7 @@ klaro ls --dims status,assignee   # show specific dimensions
 klaro read 42                     # read a card's full content
 klaro create "My new card"        # create a card
 klaro update 42 status=done       # update a card's dimension
+klaro update 42 see_also=1 see_also=2  # set a link dimension
 klaro edit 42                     # edit a card in your $EDITOR
 klaro write 42 -f card.md         # update a card from a file
 klaro describe dimension status   # see a dimension's values
