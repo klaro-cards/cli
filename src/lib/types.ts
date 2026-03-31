@@ -36,6 +36,7 @@ export interface Board {
   identifier: string;
   label: string;
   location?: string;
+  objective?: string;
   filters?: Record<string, string[]>;
   [key: string]: unknown;
 }

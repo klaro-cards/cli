@@ -61,6 +61,9 @@ async function describeBoardAction(boardId: string, _options: unknown, command: 
     // Display board header
     console.log(chalk.bold('Board:'), board.label);
     console.log(chalk.bold('Location:'), board.location);
+    if (board.objective) {
+      console.log(chalk.bold('Objective:'), board.objective);
+    }
 
     // Display filters if present
     const filterEntries = Object.entries(board.filters ?? {});

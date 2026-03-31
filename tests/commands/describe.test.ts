@@ -256,6 +256,48 @@ describe('describe command', () => {
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Location:'), 'sprint-1');
     });
 
+    it('should display board objective when present', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockGetBoard = vi.fn().mockResolvedValue({
+        id: 1,
+        identifier: 'sprint-1',
+        label: 'Sprint 1',
+        location: 'sprint-1',
+        objective: 'Ship the new onboarding flow',
+        filters: {},
+      });
+      mockCreateClient.mockReturnValue({ getBoard: mockGetBoard } as any);
+
+      const cmd = createDescribeCommand();
+      await cmd.parseAsync(['node', 'test', 'board', 'sprint-1']);
+
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Objective:'), 'Ship the new onboarding flow');
+    });
+
+    it('should not display objective when absent', async () => {
+      mockRequireProject.mockReturnValue('myproject');
+      mockRequireToken.mockReturnValue('token123');
+
+      const mockGetBoard = vi.fn().mockResolvedValue({
+        id: 1,
+        identifier: 'sprint-1',
+        label: 'Sprint 1',
+        location: 'sprint-1',
+        filters: {},
+      });
+      mockCreateClient.mockReturnValue({ getBoard: mockGetBoard } as any);
+
+      const cmd = createDescribeCommand();
+      await cmd.parseAsync(['node', 'test', 'board', 'sprint-1']);
+
+      const objectiveCalls = consoleSpy.mock.calls.filter(
+        (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('Objective:')
+      );
+      expect(objectiveCalls).toHaveLength(0);
+    });
+
     it('should display board without filters', async () => {
       mockRequireProject.mockReturnValue('myproject');
       mockRequireToken.mockReturnValue('token123');
